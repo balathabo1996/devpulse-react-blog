@@ -1,4 +1,6 @@
-/** Represents a blog post entity. */
+/**
+ * Represents a Blog Post.
+ */
 export interface Post {
   id: number;
   title: string;
@@ -9,7 +11,9 @@ export interface Post {
   imageUrl: string;
 }
 
-/** Represents a user comment entity. */
+/**
+ * Represents a User Comment.
+ */
 export interface Comment {
   id: number;
   postId: number;

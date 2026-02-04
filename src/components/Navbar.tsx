@@ -5,6 +5,7 @@ import React from "react";
 interface NavbarProps {
   onNavigate: (
     view: "home" | "posts" | "categories" | "about" | "contact",
+    reset?: boolean,
   ) => void;
 }
 
@@ -15,7 +16,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
     view: "home" | "posts" | "categories" | "about" | "contact",
   ) => {
     e.preventDefault();
-    onNavigate(view);
+    onNavigate(view, true); // Always reset filters when clicking nav items
   };
 
   return (
