@@ -1,12 +1,14 @@
 import { Terminal } from "lucide-react";
 import React from "react";
 
+/** Props for the Navbar component. */
 interface NavbarProps {
   onNavigate: (
     view: "home" | "posts" | "categories" | "about" | "contact",
   ) => void;
 }
 
+/** Sticky Navigation Bar with glassmorphism effects and internal routing. */
 export function Navbar({ onNavigate }: NavbarProps) {
   const handleNavClick = (
     e: React.MouseEvent,
@@ -17,118 +19,28 @@ export function Navbar({ onNavigate }: NavbarProps) {
   };
 
   return (
-    <nav
-      className="navbar glass"
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
-        padding: "1rem 0",
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+    <nav className="navbar glass">
+      <div className="container navbar-container">
         <a
           href="#"
           onClick={(e) => handleNavClick(e, "home")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            textDecoration: "none",
-          }}
+          className="navbar-logo"
         >
           <Terminal size={28} color="var(--primary)" />
           <span className="text-gradient">DevPulse</span>
         </a>
-        <ul
-          style={{
-            display: "flex",
-            gap: "2rem",
-            listStyle: "none",
-            margin: 0,
-            padding: 0,
-          }}
-        >
-          <li>
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, "home")}
-              style={{
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                fontSize: "1rem",
-              }}
-            >
-              Home
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, "posts")}
-              style={{
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                fontSize: "1rem",
-              }}
-            >
-              Posts
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, "categories")}
-              style={{
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                fontSize: "1rem",
-              }}
-            >
-              Categories
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, "about")}
-              style={{
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                fontSize: "1rem",
-              }}
-            >
-              About
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, "contact")}
-              style={{
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                fontSize: "1rem",
-              }}
-            >
-              Contact
-            </a>
-          </li>
+        <ul className="navbar-links">
+          {["Home", "Posts", "Categories", "About", "Contact"].map((item) => (
+            <li key={item}>
+              <a
+                href="#"
+                onClick={(e) => handleNavClick(e, item.toLowerCase() as any)}
+                className="nav-link"
+              >
+                {item}
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
     </nav>

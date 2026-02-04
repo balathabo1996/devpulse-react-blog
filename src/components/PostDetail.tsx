@@ -1,8 +1,10 @@
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
-import type { Post, Comment } from '../types';
-import { CommentList } from './CommentList';
-import { CommentForm } from './CommentForm';
+import { ArrowLeft, Calendar, Tag, ThumbsUp } from "lucide-react";
+import { useState } from "react";
+import type { Post, Comment } from "../types";
+import { CommentList } from "./CommentList";
+import { CommentForm } from "./CommentForm";
 
+/** Props for the PostDetail component. */
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
@@ -10,46 +12,35 @@ interface PostDetailProps {
   onBack: () => void;
 }
 
-export function PostDetail({ post, comments, onAddComment, onBack }: PostDetailProps) {
+/** Displays full post content with comments and like button. */
+export function PostDetail({
+  post,
+  comments,
+  onAddComment,
+  onBack,
+}: PostDetailProps) {
   return (
-    <article style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', padding: '2rem' }}>
-      <button 
-        onClick={onBack}
-        className="btn btn-ghost"
-        style={{ marginBottom: '1.5rem', paddingLeft: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-      >
+    <article className="detail-article">
+      <button onClick={onBack} className="btn btn-ghost detail-back-btn">
         <ArrowLeft size={20} /> Back to Articles
       </button>
-
-      <div style={{ marginBottom: '2rem' }}>
-        <img 
-          src={post.imageUrl} 
-          alt={post.title} 
-          style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: 'var(--radius)', marginBottom: '1.5rem' }} 
-        />
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+      <div className="detail-image-wrapper">
+        <img src={post.imageUrl} alt={post.title} className="detail-image" />
+        <div className="detail-meta">
+          <span className="meta-item">
             <Calendar size={16} /> {post.date}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <span className="meta-item">
             <Tag size={16} /> {post.category}
           </span>
         </div>
-
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1.5rem', lineHeight: 1.2 }}>{post.title}</h1>
-        
-        <div style={{ lineHeight: 1.8, fontSize: '1.125rem', color: 'var(--text)' }}>
-          {post.content}
-        </div>
+        <h1 className="detail-title">{post.title}</h1>
+        <div className="detail-body">{post.content}</div>
       </div>
-
-      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '2rem 0' }} />
-
-      <div style={{ marginBottom: '2rem' }}>
+      <hr className="detail-divider" />
+      <div className="like-section">
         <LikeButton />
       </div>
-
       <section>
         <CommentList comments={comments} />
         <CommentForm onSubmit={onAddComment} />
@@ -58,31 +49,32 @@ export function PostDetail({ post, comments, onAddComment, onBack }: PostDetailP
   );
 }
 
-import { ThumbsUp } from 'lucide-react';
-import { useState } from 'react';
-
+/** Simple Like Button component with state. */
 function LikeButton() {
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
-
   const handleLike = () => {
     if (hasLiked) {
-      setLikes(prev => prev - 1);
+      setLikes((p) => p - 1);
       setHasLiked(false);
     } else {
-      setLikes(prev => prev + 1);
+      setLikes((p) => p + 1);
       setHasLiked(true);
     }
   };
-
   return (
-    <button 
+    <button
       onClick={handleLike}
-      className={`btn ${hasLiked ? 'btn-primary' : 'btn-ghost'}`}
-      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', border: hasLiked ? 'none' : '1px solid var(--border)' }}
+      className={`btn ${hasLiked ? "btn-primary" : "btn-ghost"}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        border: hasLiked ? "none" : "1px solid var(--border)",
+      }}
     >
-      <ThumbsUp size={18} fill={hasLiked ? 'currentColor' : 'none'} />
-      {likes > 0 ? `${likes} Likes` : 'Like this post'}
+      <ThumbsUp size={18} fill={hasLiked ? "currentColor" : "none"} />{" "}
+      {likes > 0 ? `${likes} Likes` : "Like this post"}
     </button>
   );
 }

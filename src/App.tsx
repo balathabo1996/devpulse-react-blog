@@ -7,27 +7,28 @@ import { CategoryList } from "./components/CategoryList";
 import { posts as initialPosts } from "./data/posts";
 import type { Post, Comment } from "./types";
 
+/** Main Application Component: Manages state, routing, and layout. */
 function App() {
-  // 3) Store them in state (recommended)
   const [posts] = useState<Post[]>(initialPosts);
   const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0]);
-
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [lastCommenter, setLastCommenter] = useState<string | null>(null);
 
-  const categories = useMemo(() => {
-    return Array.from(new Set(posts.map((p) => p.category)));
-  }, [posts]);
-
-  const filteredPosts = useMemo(() => {
-    if (!selectedCategory) return posts;
-    return posts.filter((p) => p.category === selectedCategory);
-  }, [posts, selectedCategory]);
+  const categories = useMemo(
+    () => Array.from(new Set(posts.map((p) => p.category))),
+    [posts],
+  );
+  const filteredPosts = useMemo(
+    () =>
+      selectedCategory
+        ? posts.filter((p) => p.category === selectedCategory)
+        : posts,
+    [posts, selectedCategory],
+  );
 
   const handleAddComment = (data: { user: string; text: string }) => {
     if (!selectedPost) return;
-
     const newComment: Comment = {
       id: Date.now(),
       postId: selectedPost.id,
@@ -35,12 +36,10 @@ function App() {
       text: data.text,
       date: new Date().toLocaleDateString(),
     };
-
     setComments((prev) => ({
       ...prev,
       [selectedPost.id]: [...(prev[selectedPost.id] || []), newComment],
     }));
-
     setLastCommenter(data.user);
   };
 
@@ -53,36 +52,28 @@ function App() {
         setSelectedCategory(null);
         break;
       case "posts":
-        setSelectedPost(null); // Show list view/reset
+        setSelectedPost(null);
         setSelectedCategory(null);
         break;
       case "categories":
-        setSelectedPost(null); // Ensure sidebar is visible
+        setSelectedPost(null);
         break;
       case "about":
         setSelectedPost(null);
         setSelectedCategory(null);
-        break;
+        break; // Placeholder for About
       case "contact":
         setSelectedPost(null);
-        break;
+        break; // Placeholder for Contact
     }
   };
 
   return (
-    <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
+    <div className="app-wrapper">
       <Navbar onNavigate={handleNavigate} />
-
       <Hero />
-
-      <main
-        className="container"
-        style={{ padding: "0", flex: 1, marginBottom: "4rem" }}
-      >
+      <main className="container main-content">
         <div className="layout-grid">
-          {/* Left Column: Recent Posts */}
           <div>
             <div style={{ marginBottom: "2rem" }}>
               <h2
@@ -96,36 +87,14 @@ function App() {
                   ? `${selectedCategory} Articles`
                   : "Recent Posts"}
               </h2>
-              {/* 4) Pass posts to child component */}
               <PostList posts={filteredPosts} onSelect={setSelectedPost} />
             </div>
           </div>
-
-          {/* Right Column: Sidebar (Selected Post or Widgets) */}
-          <aside
-            style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
-          >
-            {/* Selected Post View */}
-            <div
-              style={{
-                backgroundColor: "var(--surface)",
-                padding: "1.5rem",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "bold",
-                  marginBottom: "1rem",
-                  borderBottom: "1px solid var(--border)",
-                  paddingBottom: "0.5rem",
-                }}
-              >
+          <aside className="sidebar">
+            <div className="widget">
+              <h3 className="widget-title">
                 {selectedPost ? "Selected Post" : "About"}
               </h3>
-
               {selectedPost ? (
                 <PostDetail
                   post={selectedPost}
@@ -134,7 +103,7 @@ function App() {
                   onBack={() => setSelectedPost(null)}
                 />
               ) : (
-                <div style={{ color: "var(--text-muted)", lineHeight: "1.6" }}>
+                <div className="widget-empty">
                   <p>
                     Welcome to DevPulse. Select a post from the list to read
                     more details and leave comments.
@@ -147,8 +116,6 @@ function App() {
                 </div>
               )}
             </div>
-
-            {/* Categories Widget */}
             <CategoryList
               categories={categories}
               selectedCategory={selectedCategory}
@@ -157,19 +124,10 @@ function App() {
           </aside>
         </div>
       </main>
-
-      <footer
-        style={{
-          backgroundColor: "var(--surface)",
-          borderTop: "1px solid var(--border)",
-          padding: "2rem 0",
-          textAlign: "center",
-          color: "var(--text-muted)",
-        }}
-      >
+      <footer className="footer">
         <p>&copy; 2026 DevPulse Blog. Built with React & TypeScript.</p>
         {lastCommenter && (
-          <p style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>
+          <p className="footer-note">
             👋 Thanks for contributing, {lastCommenter}!
           </p>
         )}

@@ -1,21 +1,21 @@
-import { useForm } from 'react-hook-form';
-import { Send } from 'lucide-react';
+import { useForm } from "react-hook-form";
+import { Send } from "lucide-react";
 
 interface CommentFormData {
   user: string;
   text: string;
 }
-
 interface CommentFormProps {
   onSubmit: (data: CommentFormData) => void;
 }
 
+/** React Hook Form for submitting comments with validation. */
 export function CommentForm({ onSubmit }: CommentFormProps) {
-  const { 
-    register, 
-    handleSubmit, 
+  const {
+    register,
+    handleSubmit,
     reset,
-    formState: { errors } 
+    formState: { errors },
   } = useForm<CommentFormData>();
 
   const onFormSubmit = (data: CommentFormData) => {
@@ -24,69 +24,59 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit(onFormSubmit)} 
-      style={{ 
-        backgroundColor: 'var(--surface)', 
-        padding: '1.5rem', 
-        borderRadius: 'var(--radius)', 
-        boxShadow: 'var(--shadow-sm)',
-        marginTop: '2rem',
-        border: '1px solid var(--border)'
-      }}
-    >
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '1rem' }}>Add a Comment</h3>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="user" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-          Name <span style={{ color: 'var(--danger)' }}>*</span>
+    <form onSubmit={handleSubmit(onFormSubmit)} className="comment-form">
+      <h3 className="widget-title">Add a Comment</h3>
+
+      <div className="form-group">
+        <label htmlFor="user" className="form-label">
+          Name <span style={{ color: "var(--danger)" }}>*</span>
         </label>
-        <input 
+        <input
           id="user"
-          {...register('user', { 
-            required: 'Name is required', 
-            minLength: { value: 2, message: 'Name must be at least 2 characters' } 
+          {...register("user", {
+            required: "Name is required",
+            minLength: {
+              value: 2,
+              message: "Name must be at least 2 characters",
+            },
           })}
-          style={{ 
-            width: '100%', 
-            padding: '0.75rem', 
-            borderRadius: 'var(--radius)', 
-            border: `1px solid ${errors.user ? 'var(--danger)' : 'var(--border)'}`,
-            fontFamily: 'inherit'
+          className="form-input"
+          style={{
+            borderColor: errors.user ? "var(--danger)" : "var(--border)",
           }}
           placeholder="John Doe"
         />
-        {errors.user && <p style={{ color: 'var(--danger)', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.user.message}</p>}
+        {errors.user && <p className="form-error">{errors.user.message}</p>}
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="text" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-          Comment <span style={{ color: 'var(--danger)' }}>*</span>
+      <div className="form-group">
+        <label htmlFor="text" className="form-label">
+          Comment <span style={{ color: "var(--danger)" }}>*</span>
         </label>
-        <textarea 
+        <textarea
           id="text"
           rows={4}
-          {...register('text', { 
-            required: 'Comment is required', 
-            minLength: { value: 10, message: 'Comment must be at least 10 characters' } 
+          {...register("text", {
+            required: "Comment is required",
+            minLength: {
+              value: 10,
+              message: "Comment must be at least 10 characters",
+            },
           })}
-          style={{ 
-            width: '100%', 
-            padding: '0.75rem', 
-            borderRadius: 'var(--radius)', 
-            border: `1px solid ${errors.text ? 'var(--danger)' : 'var(--border)'}`,
-            fontFamily: 'inherit',
-            resize: 'vertical'
+          className="form-input"
+          style={{
+            borderColor: errors.text ? "var(--danger)" : "var(--border)",
+            resize: "vertical",
           }}
           placeholder="Share your thoughts..."
         />
-        {errors.text && <p style={{ color: 'var(--danger)', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.text.message}</p>}
+        {errors.text && <p className="form-error">{errors.text.message}</p>}
       </div>
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         className="btn btn-primary"
-        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
       >
         <Send size={16} /> Post Comment
       </button>
