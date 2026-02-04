@@ -3,10 +3,10 @@ import { PostCard } from "./PostCard";
 
 interface PostListProps {
   posts: Post[];
-  onSelectPost: (post: Post) => void;
+  onSelect: (post: Post) => void;
 }
 
-export function PostList({ posts, onSelectPost }: PostListProps) {
+export function PostList({ posts, onSelect }: PostListProps) {
   if (posts.length === 0) {
     return (
       <div
@@ -24,7 +24,7 @@ export function PostList({ posts, onSelectPost }: PostListProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onClick={onSelectPost} />
+        <PostCard key={post.id} post={post} onClick={onSelect} />
       ))}
     </div>
   );

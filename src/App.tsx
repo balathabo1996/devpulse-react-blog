@@ -8,21 +8,22 @@ import { posts as initialPosts } from "./data/posts";
 import type { Post, Comment } from "./types";
 
 function App() {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(
-    initialPosts[0],
-  );
+  // 3) Store them in state (recommended)
+  const [posts] = useState<Post[]>(initialPosts);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0]);
+
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [lastCommenter, setLastCommenter] = useState<string | null>(null);
 
   const categories = useMemo(() => {
-    return Array.from(new Set(initialPosts.map((p) => p.category)));
-  }, []);
+    return Array.from(new Set(posts.map((p) => p.category)));
+  }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    if (!selectedCategory) return initialPosts;
-    return initialPosts.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
+    if (!selectedCategory) return posts;
+    return posts.filter((p) => p.category === selectedCategory);
+  }, [posts, selectedCategory]);
 
   const handleAddComment = (data: { user: string; text: string }) => {
     if (!selectedPost) return;
@@ -48,7 +49,7 @@ function App() {
   ) => {
     switch (view) {
       case "home":
-        setSelectedPost(initialPosts[0]);
+        setSelectedPost(posts[0]);
         setSelectedCategory(null);
         break;
       case "posts":
@@ -95,7 +96,8 @@ function App() {
                   ? `${selectedCategory} Articles`
                   : "Recent Posts"}
               </h2>
-              <PostList posts={filteredPosts} onSelectPost={setSelectedPost} />
+              {/* 4) Pass posts to child component */}
+              <PostList posts={filteredPosts} onSelect={setSelectedPost} />
             </div>
           </div>
 
