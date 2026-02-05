@@ -84,7 +84,3 @@ The UI follows a consistent "Dark Slate" theme defined in `index.css`:
 - **Primary**: Pink/Purple Gradient (`--primary-gradient`)
 - **Background**: Deep Slate (`#0f172a`)
 - **Typography**: Inter / Outfit sans-serif fonts
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
