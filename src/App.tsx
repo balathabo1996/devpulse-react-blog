@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+// App Component: Main application component handling routing and layout structure
+import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -16,11 +17,30 @@ import type { Post, Comment } from "./types";
 function App() {
   const [view, setView] = useState<
     "home" | "posts" | "categories" | "about" | "contact"
-  >("home");
+  >(() => {
+    const saved = localStorage.getItem("app_view");
+    const validViews = ["home", "posts", "categories", "about", "contact"];
+    return validViews.includes(saved || "")
+      ? (saved as "home" | "posts" | "categories" | "about" | "contact")
+      : "home";
+  });
+
   const [posts] = useState<Post[]>(initialPosts);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(posts[0]);
+
+  const [selectedPost, setSelectedPost] = useState<Post | null>(() => {
+    const savedId = localStorage.getItem("app_post_id");
+    return savedId
+      ? initialPosts.find((p) => p.id === Number(savedId)) || null
+      : null;
+  });
+
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    () => {
+      return localStorage.getItem("app_category");
+    },
+  );
   const [lastCommenter, setLastCommenter] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,6 +49,28 @@ function App() {
     () => Array.from(new Set(posts.map((p) => p.category))),
     [posts],
   );
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem("app_view", view);
+  }, [view]);
+
+  useEffect(() => {
+    if (selectedPost) {
+      localStorage.setItem("app_post_id", String(selectedPost.id));
+    } else {
+      localStorage.removeItem("app_post_id");
+    }
+  }, [selectedPost]);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      localStorage.setItem("app_category", selectedCategory);
+    } else {
+      localStorage.removeItem("app_category");
+    }
+  }, [selectedCategory]);
+
   const filteredPosts = useMemo(() => {
     let result = posts;
 
@@ -139,34 +181,15 @@ function App() {
             />
           ) : (
             <div className="layout-grid">
-              <div className="widget" style={{ gridColumn: "1 / -1" }}>
-                <h1
-                  className="hero-title"
-                  style={{ fontSize: "2.5rem", marginBottom: "1.5rem" }}
-                >
+              <div className="widget widget-full-width">
+                <h1 className="hero-title hero-title-large">
                   {selectedCategory ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.5rem",
-                      }}
-                    >
+                    <div className="category-header">
                       <button
                         onClick={() => handleNavigate("categories")}
-                        className="btn btn-ghost"
-                        style={{
-                          alignSelf: "flex-start",
-                          paddingLeft: 0,
-                          color: "var(--text-muted)",
-                          fontSize: "1rem",
-                          fontWeight: "normal",
-                        }}
+                        className="btn btn-ghost btn-back-category"
                       >
-                        <ArrowLeft
-                          size={16}
-                          style={{ display: "inline", marginRight: "0.5rem" }}
-                        />{" "}
+                        <ArrowLeft size={16} className="icon-margin-right" />{" "}
                         Back to Categories
                       </button>
                       <span>
@@ -182,7 +205,7 @@ function App() {
                     </>
                   )}
                 </h1>
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+                <div className="post-list-wrapper-max-width">
                   <PostList
                     posts={filteredPosts}
                     onSelect={(post) => {
@@ -198,14 +221,8 @@ function App() {
           // Default Home Layout (Split View)
           <div className="layout-grid">
             <div>
-              <div style={{ marginBottom: "2rem" }}>
-                <h2
-                  style={{
-                    fontSize: "1.75rem",
-                    fontWeight: "bold",
-                    marginBottom: "1rem",
-                  }}
-                >
+              <div className="section-header">
+                <h2 className="section-title">
                   {selectedCategory
                     ? `${selectedCategory} Articles`
                     : "Recent Posts"}

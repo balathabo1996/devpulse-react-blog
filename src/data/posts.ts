@@ -1,3 +1,4 @@
+// Mock Data: Contains static blog post data for development
 import type { Post } from "../types";
 
 /** Static array of blog posts used as mock data. */

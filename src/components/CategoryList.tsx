@@ -1,3 +1,4 @@
+// Category List: Renders a list of clickable category pills/links
 /** Props for the CategoryList component. */
 interface CategoryListProps {
   categories: string[];
@@ -18,13 +19,9 @@ export function CategoryList({
         <li>
           <button
             onClick={() => onSelectCategory(null)}
-            className="category-btn"
-            style={{
-              backgroundColor:
-                selectedCategory === null ? "var(--primary)" : "transparent",
-              color: selectedCategory === null ? "white" : "var(--text)",
-              fontWeight: selectedCategory === null ? 600 : 400,
-            }}
+            className={`category-btn ${
+              selectedCategory === null ? "active" : "inactive"
+            }`}
           >
             All Categories
           </button>
@@ -33,15 +30,9 @@ export function CategoryList({
           <li key={category}>
             <button
               onClick={() => onSelectCategory(category)}
-              className="category-btn"
-              style={{
-                backgroundColor:
-                  selectedCategory === category
-                    ? "var(--primary)"
-                    : "transparent",
-                color: selectedCategory === category ? "white" : "var(--text)",
-                fontWeight: selectedCategory === category ? 600 : 400,
-              }}
+              className={`category-btn ${
+                selectedCategory === category ? "active" : "inactive"
+              }`}
             >
               {category}
             </button>

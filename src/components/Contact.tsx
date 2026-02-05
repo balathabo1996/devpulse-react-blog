@@ -1,3 +1,4 @@
+// Contact Page: Contact form handling user inquiries
 import { Send, Mail, MapPin, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
 
@@ -15,12 +16,13 @@ export function Contact() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitSuccessful },
-  } = useForm<ContactFormData>();
+  } = useForm<ContactFormData>({
+    mode: "onChange",
+  });
 
   const onSubmit = (data: ContactFormData) => {
     console.log("Contact Form Data:", data);
     // Simulate generic "send" action
-    alert(`Message sent! Thanks, ${data.name}.`);
     reset();
   };
 
@@ -31,38 +33,23 @@ export function Contact() {
         <h2 className="widget-title">Get in Touch</h2>
 
         {isSubmitSuccessful && (
-          <div
-            style={{
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              color: "#10b981",
-              padding: "1rem",
-              borderRadius: "1rem",
-              marginBottom: "1.5rem",
-            }}
-          >
+          <div className="success-message">
             Thank you for reaching out! We will get back to you shortly.
           </div>
         )}
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="comment-form"
-          style={{
-            marginTop: 0,
-            boxShadow: "none",
-            border: "none",
-            padding: 0,
-            backgroundColor: "transparent",
-          }}
+          className="comment-form contact-form-reset"
         >
           <div className="form-group">
             <label htmlFor="name" className="form-label">
-              Name <span style={{ color: "var(--danger)" }}>*</span>
+              Name <span className="text-danger">*</span>
             </label>
             <input
               id="name"
               {...register("name", { required: "Name is required" })}
-              className="form-input"
+              className={`form-input ${errors.name ? "error" : ""}`}
               placeholder="Your Name"
             />
             {errors.name && <p className="form-error">{errors.name.message}</p>}
@@ -70,7 +57,7 @@ export function Contact() {
 
           <div className="form-group">
             <label htmlFor="email" className="form-label">
-              Email <span style={{ color: "var(--danger)" }}>*</span>
+              Email <span className="text-danger">*</span>
             </label>
             <input
               id="email"
@@ -82,7 +69,7 @@ export function Contact() {
                   message: "Invalid email address",
                 },
               })}
-              className="form-input"
+              className={`form-input ${errors.email ? "error" : ""}`}
               placeholder="you@example.com"
             />
             {errors.email && (
@@ -104,14 +91,18 @@ export function Contact() {
 
           <div className="form-group">
             <label htmlFor="message" className="form-label">
-              Message <span style={{ color: "var(--danger)" }}>*</span>
+              Message <span className="text-danger">*</span>
             </label>
             <textarea
               id="message"
               rows={5}
-              {...register("message", { required: "Message is required" })}
-              className="form-input"
-              style={{ resize: "vertical" }}
+              {...register("message", {
+                required: "Message is required",
+                validate: (value) =>
+                  value.trim().split(/\s+/).length >= 10 ||
+                  "Message must be at least 10 words long",
+              })}
+              className={`form-input resize-vertical ${errors.message ? "error" : ""}`}
               placeholder="Write your message here..."
             />
             {errors.message && (
@@ -121,8 +112,7 @@ export function Contact() {
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: "100%", marginTop: "1rem", gap: "0.5rem" }}
+            className="btn btn-primary contact-button-wrapper"
           >
             <Send size={18} /> Send Message
           </button>
@@ -133,81 +123,36 @@ export function Contact() {
       <aside className="sidebar">
         <div className="widget">
           <h3 className="widget-title">Contact Information</h3>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
-          >
-            <div
-              style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}
-            >
-              <div
-                style={{
-                  backgroundColor: "rgba(244, 114, 182, 0.1)",
-                  padding: "0.75rem",
-                  borderRadius: "0.5rem",
-                  color: "var(--primary)",
-                }}
-              >
+          <div className="contact-info-list">
+            <div className="contact-info-item">
+              <div className="contact-icon-box primary">
                 <Mail size={24} />
               </div>
               <div>
-                <h4 style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>
-                  Email Us
-                </h4>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  hello@devpulse.com
-                </p>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  support@devpulse.com
-                </p>
+                <h4 className="contact-item-title">Email Us</h4>
+                <p className="contact-item-text">hello@devpulse.com</p>
+                <p className="contact-item-text">support@devpulse.com</p>
               </div>
             </div>
 
-            <div
-              style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}
-            >
-              <div
-                style={{
-                  backgroundColor: "rgba(168, 85, 247, 0.1)",
-                  padding: "0.75rem",
-                  borderRadius: "0.5rem",
-                  color: "var(--secondary)",
-                }}
-              >
+            <div className="contact-info-item">
+              <div className="contact-icon-box secondary">
                 <MapPin size={24} />
               </div>
               <div>
-                <h4 style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>
-                  Visit Us
-                </h4>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  123 Tech Street
-                </p>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  San Francisco, CA 94107
-                </p>
+                <h4 className="contact-item-title">Visit Us</h4>
+                <p className="contact-item-text">38 Florens Ave</p>
+                <p className="contact-item-text">Toronto, ON M1L 1R6</p>
               </div>
             </div>
 
-            <div
-              style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}
-            >
-              <div
-                style={{
-                  backgroundColor: "rgba(6, 182, 212, 0.1)",
-                  padding: "0.75rem",
-                  borderRadius: "0.5rem",
-                  color: "var(--accent)",
-                }}
-              >
+            <div className="contact-info-item">
+              <div className="contact-icon-box accent">
                 <Phone size={24} />
               </div>
               <div>
-                <h4 style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>
-                  Call Us
-                </h4>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  +1 (555) 123-4567
-                </p>
+                <h4 className="contact-item-title">Call Us</h4>
+                <p className="contact-item-text">+1 (437) 383-1996</p>
               </div>
             </div>
           </div>

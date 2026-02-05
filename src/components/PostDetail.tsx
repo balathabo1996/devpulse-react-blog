@@ -1,3 +1,4 @@
+// Post Content: Renders the full content of a blog post
 import { ArrowLeft, Calendar, Tag, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import type { Post, Comment } from "../types";
@@ -65,13 +66,7 @@ function LikeButton() {
   return (
     <button
       onClick={handleLike}
-      className={`btn ${hasLiked ? "btn-primary" : "btn-ghost"}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        border: hasLiked ? "none" : "1px solid var(--border)",
-      }}
+      className={`btn btn-with-icon ${hasLiked ? "btn-primary like-btn-active" : "btn-ghost like-btn-inactive"}`}
     >
       <ThumbsUp size={18} fill={hasLiked ? "currentColor" : "none"} />{" "}
       {likes > 0 ? `${likes} Likes` : "Like this post"}

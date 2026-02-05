@@ -1,3 +1,4 @@
+// Navbar: Top navigation bar with branding and links
 import { Terminal } from "lucide-react";
 import React from "react";
 
@@ -35,7 +36,17 @@ export function Navbar({ onNavigate }: NavbarProps) {
             <li key={item}>
               <a
                 href="#"
-                onClick={(e) => handleNavClick(e, item.toLowerCase() as any)}
+                onClick={(e) =>
+                  handleNavClick(
+                    e,
+                    item.toLowerCase() as
+                      | "home"
+                      | "posts"
+                      | "categories"
+                      | "about"
+                      | "contact",
+                  )
+                }
                 className="nav-link"
               >
                 {item}

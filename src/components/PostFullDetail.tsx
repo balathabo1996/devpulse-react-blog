@@ -1,3 +1,4 @@
+// Blog Post Page: Main view for a specific blog post including comments
 import { ArrowLeft, Calendar, Tag, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import type { Post, Comment } from "../types";
@@ -33,84 +34,29 @@ export function PostFullDetail({
 
   return (
     <article className="layout-grid">
-      <div
-        className="widget"
-        style={{
-          gridColumn: "1 / -1",
-          padding: 0,
-          overflow: "hidden",
-          border: "none",
-          background: "transparent",
-        }}
-      >
+      <div className="widget full-detail-widget">
         {/* Full Width Hero Image */}
-        <div
-          style={{
-            position: "relative",
-            height: "400px",
-            marginBottom: "2rem",
-            borderRadius: "var(--radius)",
-            overflow: "hidden",
-          }}
-        >
+        <div className="full-detail-hero">
           <img
             src={post.imageUrl}
             alt={post.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            className="full-detail-image"
           />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              padding: "2rem",
-            }}
-          >
+          <div className="full-detail-overlay" />
+          <div className="full-detail-content">
             <button
               onClick={onBack}
-              className="btn btn-primary"
-              style={{
-                marginBottom: "1rem",
-                padding: "0.5rem 1rem",
-                fontSize: "0.9rem",
-              }}
+              className="btn btn-primary full-detail-back-btn"
             >
               <ArrowLeft size={16} style={{ marginRight: "0.5rem" }} /> Back to
               Posts
             </button>
-            <h1
-              className="hero-title"
-              style={{
-                fontSize: "3rem",
-                color: "white",
-                marginBottom: "0.5rem",
-              }}
-            >
-              {post.title}
-            </h1>
-            <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                color: "var(--text-muted)",
-              }}
-            >
-              <span
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
+            <h1 className="hero-title full-detail-title">{post.title}</h1>
+            <div className="full-detail-meta">
+              <span className="meta-item">
                 <Calendar size={18} /> {post.date}
               </span>
-              <span
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
+              <span className="meta-item">
                 <Tag size={18} /> {post.category}
               </span>
             </div>
@@ -118,15 +64,8 @@ export function PostFullDetail({
         </div>
 
         {/* Content Body */}
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 1rem" }}>
-          <div
-            className="detail-body"
-            style={{
-              fontSize: "1.25rem",
-              lineHeight: "1.8",
-              marginBottom: "3rem",
-            }}
-          >
+        <div className="full-detail-body-container">
+          <div className="detail-body full-detail-text">
             {post.content}
             <p>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
@@ -134,14 +73,7 @@ export function PostFullDetail({
               enim ad minim veniam, quis nostrud exercitation ullamco laboris
               nisi ut aliquip ex ea commodo consequat.
             </p>
-            <h3
-              style={{
-                fontSize: "1.75rem",
-                fontWeight: "bold",
-                marginTop: "2rem",
-                marginBottom: "1rem",
-              }}
-            >
+            <h3 className="section-title" style={{ marginTop: "2rem" }}>
               Key Takeaways
             </h3>
             <ul
@@ -163,24 +95,10 @@ export function PostFullDetail({
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: "4rem",
-            }}
-          >
+          <div className="full-detail-like-container">
             <button
               onClick={handleLike}
-              className={`btn ${hasLiked ? "btn-primary" : "btn-ghost"}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                border: hasLiked ? "none" : "1px solid var(--border)",
-                padding: "0.75rem 2rem",
-                fontSize: "1.1rem",
-              }}
+              className={`btn btn-with-icon like-btn-large ${hasLiked ? "btn-primary like-btn-active" : "btn-ghost like-btn-inactive"}`}
             >
               <ThumbsUp size={20} fill={hasLiked ? "currentColor" : "none"} />{" "}
               {likes > 0 ? `${likes} Likes` : "Like this post"}

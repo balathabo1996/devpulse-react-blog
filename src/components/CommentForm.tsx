@@ -1,3 +1,4 @@
+// Comment Form: Input form for users to add new comments
 import { useForm } from "react-hook-form";
 import { Send } from "lucide-react";
 
@@ -16,7 +17,9 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CommentFormData>();
+  } = useForm<CommentFormData>({
+    mode: "onChange",
+  });
 
   const onFormSubmit = (data: CommentFormData) => {
     onSubmit(data);
@@ -29,7 +32,7 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
 
       <div className="form-group">
         <label htmlFor="user" className="form-label">
-          Name <span style={{ color: "var(--danger)" }}>*</span>
+          Name <span className="form-required">*</span>
         </label>
         <input
           id="user"
@@ -40,10 +43,7 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
               message: "Name must be at least 2 characters",
             },
           })}
-          className="form-input"
-          style={{
-            borderColor: errors.user ? "var(--danger)" : "var(--border)",
-          }}
+          className={`form-input ${errors.user ? "error" : ""}`}
           placeholder="John Doe"
         />
         {errors.user && <p className="form-error">{errors.user.message}</p>}
@@ -51,7 +51,7 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
 
       <div className="form-group">
         <label htmlFor="text" className="form-label">
-          Comment <span style={{ color: "var(--danger)" }}>*</span>
+          Comment <span className="form-required">*</span>
         </label>
         <textarea
           id="text"
@@ -63,21 +63,13 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
               message: "Comment must be at least 10 characters",
             },
           })}
-          className="form-input"
-          style={{
-            borderColor: errors.text ? "var(--danger)" : "var(--border)",
-            resize: "vertical",
-          }}
+          className={`form-input resize-vertical ${errors.text ? "error" : ""}`}
           placeholder="Share your thoughts..."
         />
         {errors.text && <p className="form-error">{errors.text.message}</p>}
       </div>
 
-      <button
-        type="submit"
-        className="btn btn-primary"
-        style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-      >
+      <button type="submit" className="btn btn-primary btn-with-icon">
         <Send size={16} /> Post Comment
       </button>
     </form>

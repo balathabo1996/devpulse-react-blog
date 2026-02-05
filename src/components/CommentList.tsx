@@ -1,3 +1,4 @@
+// Comment List: Renders a list of CommentItems
 import type { Comment } from "../types";
 import { CommentItem } from "./CommentItem";
 
@@ -11,11 +12,8 @@ export function CommentList({ comments }: CommentListProps) {
   if (comments.length === 0) {
     return (
       <div
-        style={{
-          padding: "2rem 0",
-          color: "var(--text-muted)",
-          fontStyle: "italic",
-        }}
+        className="widget-empty"
+        style={{ padding: "2rem 0", fontStyle: "italic" }}
       >
         No comments yet. Be the first to share your thoughts!
       </div>
@@ -23,16 +21,8 @@ export function CommentList({ comments }: CommentListProps) {
   }
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h3
-        style={{
-          fontSize: "1.25rem",
-          fontWeight: "bold",
-          marginBottom: "1.5rem",
-        }}
-      >
-        Comments ({comments.length})
-      </h3>
+    <div className="comments-section">
+      <h3 className="comments-header">Comments ({comments.length})</h3>
       {comments.map((comment) => (
         <CommentItem key={comment.id} comment={comment} />
       ))}

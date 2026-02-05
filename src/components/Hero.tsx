@@ -1,3 +1,4 @@
+// Hero Section: large banner/intro section on the home page
 import { Search } from "lucide-react";
 
 interface HeroProps {
@@ -16,19 +17,9 @@ export function Hero({ searchQuery, onSearch }: HeroProps) {
             Welcome to <span className="text-gradient">DevPulse</span>
           </h1>
           <p className="hero-subtitle">
-            A vibrant hub for{" "}
-            <span style={{ color: "var(--accent)", fontWeight: "bold" }}>
-              developers
-            </span>
-            ,{" "}
-            <span style={{ color: "var(--secondary)", fontWeight: "bold" }}>
-              creators
-            </span>
-            , and{" "}
-            <span style={{ color: "var(--primary)", fontWeight: "bold" }}>
-              dreamers
-            </span>
-            .
+            A vibrant hub for <span className="text-accent">developers</span>,{" "}
+            <span className="text-secondary">creators</span>, and{" "}
+            <span className="text-primary">dreamers</span>.
           </p>
         </div>
         <div className="hero-search-wrapper">

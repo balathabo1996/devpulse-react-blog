@@ -1,3 +1,4 @@
+// Post Grid: Displays a grid/list of PostCards
 import type { Post } from "../types";
 import { PostCard } from "./PostCard";
 
@@ -10,20 +11,10 @@ interface PostListProps {
 /** Renders a list of PostCard components or a message if empty. */
 export function PostList({ posts, onSelect }: PostListProps) {
   if (posts.length === 0) {
-    return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "3rem",
-          color: "var(--text-muted)",
-        }}
-      >
-        No posts found.
-      </div>
-    );
+    return <div className="post-list-empty">No posts found.</div>;
   }
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div className="post-list-wrapper">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} onClick={onSelect} />
       ))}

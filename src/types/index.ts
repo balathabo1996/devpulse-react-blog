@@ -1,3 +1,4 @@
+// Type Definitions: Shared TypeScript interfaces for Blog Posts, Categories, and Comments
 /**
  * Represents a Blog Post.
  */
