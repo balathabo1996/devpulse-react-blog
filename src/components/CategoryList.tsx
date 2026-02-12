@@ -1,12 +1,12 @@
 // Category List: Renders a list of clickable category pills/links
-/** Props for the CategoryList component. */
+// Props for the CategoryList component.
 interface CategoryListProps {
   categories: string[];
   selectedCategory: string | null;
   onSelectCategory: (category: string | null) => void;
 }
 
-/** Sidebar widget to filter posts by category. */
+// Sidebar widget to filter posts by category.
 export function CategoryList({
   categories,
   selectedCategory,

@@ -13,30 +13,37 @@ export default function PostsPage() {
 
   const selectedCategory = typeof category === "string" ? category : null;
 
+  // Fetch posts from API and map them to our internal Post type.
   useEffect(() => {
     async function fetchPosts() {
       try {
         const res = await fetch("https://jsonplaceholder.typicode.com/posts");
         const data = await res.json();
-        
+
         const CATEGORIES = ["Engineering", "AI", "Career", "Tutorials"];
 
-        const mappedPosts: Post[] = data.slice(0, 6).map((p: any) => {
-           const staticPost = staticPosts.find(sp => sp.id === p.id);
-           if (staticPost) {
-             return { ...staticPost, imageUrl: staticPost.imageUrl || `/images/post${(p.id % 4) + 1}.jpg` };
-           }
-           return {
-            id: p.id,
-            title: p.title,
-            date: new Date().toLocaleDateString(), 
-            excerpt: p.body.substring(0, 100) + "...",
-            content: p.body,
-            category: CATEGORIES[p.id % CATEGORIES.length],
-            imageUrl: `/images/post${(p.id % 4) + 1}.jpg`,
-          };
-        });
-        
+        const mappedPosts: Post[] = data
+          .slice(0, 6)
+          .map((p: { id: number; title: string; body: string }) => {
+            const staticPost = staticPosts.find((sp) => sp.id === p.id);
+            if (staticPost) {
+              return {
+                ...staticPost,
+                imageUrl:
+                  staticPost.imageUrl || `/images/post${(p.id % 4) + 1}.jpg`,
+              };
+            }
+            return {
+              id: p.id,
+              title: p.title,
+              date: new Date().toLocaleDateString(),
+              excerpt: p.body.substring(0, 100) + "...",
+              content: p.body,
+              category: CATEGORIES[p.id % CATEGORIES.length],
+              imageUrl: `/images/post${(p.id % 4) + 1}.jpg`,
+            };
+          });
+
         setPosts(mappedPosts);
       } catch (err) {
         console.error("Failed to fetch posts", err);
@@ -47,6 +54,7 @@ export default function PostsPage() {
     fetchPosts();
   }, []);
 
+  // Filter posts based on selected category.
   const filteredPosts = useMemo(() => {
     let result = posts;
     if (selectedCategory) {
@@ -62,8 +70,13 @@ export default function PostsPage() {
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: "4rem", textAlign: "center" }}>
-        <h2 className="text-gradient" style={{ fontSize: "2rem" }}>Loading posts...</h2>
+      <div
+        className="container"
+        style={{ padding: "4rem", textAlign: "center" }}
+      >
+        <h2 className="text-gradient" style={{ fontSize: "2rem" }}>
+          Loading posts...
+        </h2>
       </div>
     );
   }
@@ -78,14 +91,11 @@ export default function PostsPage() {
                 onClick={() => router.push("/categories")}
                 className="btn btn-ghost btn-back-category"
               >
-                <ArrowLeft size={16} className="icon-margin-right" />{" "}
-                Back to Categories
+                <ArrowLeft size={16} className="icon-margin-right" /> Back to
+                Categories
               </button>
               <span>
-                <span className="text-gradient">
-                  {selectedCategory}
-                </span>{" "}
-                Posts
+                <span className="text-gradient">{selectedCategory}</span> Posts
               </span>
             </div>
           ) : (
@@ -95,10 +105,7 @@ export default function PostsPage() {
           )}
         </h1>
         <div className="post-list-wrapper-max-width">
-          <PostList
-            posts={filteredPosts}
-            onSelect={handleSelectPost}
-          />
+          <PostList posts={filteredPosts} onSelect={handleSelectPost} />
         </div>
       </div>
     </div>

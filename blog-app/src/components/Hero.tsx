@@ -3,29 +3,33 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-/** Hero section with gradient text and glow background. */
+// Hero section with gradient text and glow background.
 export function Hero() {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    if (typeof router.query.q === "string") {
-      setQuery(router.query.q);
-    } else {
-      setQuery("");
+    // Sync local state with URL query
+    if (router.isReady) {
+      const q = typeof router.query.q === "string" ? router.query.q : "";
+      if (q !== query) {
+        setQuery(q);
+      }
     }
-  }, [router.query.q]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.q]);
 
   const handleSearch = (val: string) => {
     setQuery(val);
-    // If on home page, update URL. If not, maybe redirect to home?
-    // Original behavior: typing redirects to home.
-    // Here we can instruct user to press enter or debounce.
-    // For simplicity and "live" feel:
+    // Update URL query parameter without full page reload
     if (router.pathname !== "/") {
-       router.push({ pathname: "/", query: { q: val } });
+      router.push({ pathname: "/", query: { q: val } });
     } else {
-       router.replace({ pathname: "/", query: { ...router.query, q: val } }, undefined, { shallow: true });
+      router.replace(
+        { pathname: "/", query: { ...router.query, q: val } },
+        undefined,
+        { shallow: true },
+      );
     }
   };
 

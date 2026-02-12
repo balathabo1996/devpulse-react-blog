@@ -13,11 +13,13 @@ import { Categories } from "./components/Categories";
 import { posts as initialPosts } from "./data/posts";
 import type { Post, Comment } from "./types";
 
-/** Main Application Component: Manages state, routing, and layout. */
+// Main Application Component: Manages state, routing, and layout.
 function App() {
+  // State for current view (routing)
   const [view, setView] = useState<
     "home" | "posts" | "categories" | "about" | "contact"
   >(() => {
+    // Initialize view from local storage or default to 'home'
     const saved = localStorage.getItem("app_view");
     const validViews = ["home", "posts", "categories", "about", "contact"];
     return validViews.includes(saved || "")
@@ -25,36 +27,48 @@ function App() {
       : "home";
   });
 
+  // State for posts data
   const [posts] = useState<Post[]>(initialPosts);
 
+  // State for currently selected post
   const [selectedPost, setSelectedPost] = useState<Post | null>(() => {
+    // Initialize selected post from local storage
     const savedId = localStorage.getItem("app_post_id");
     return savedId
       ? initialPosts.find((p) => p.id === Number(savedId)) || null
       : null;
   });
 
+  // State for comments, mapped by post ID
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
 
+  // State for currently selected category
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     () => {
+      // Initialize selected category from local storage
       return localStorage.getItem("app_category");
     },
   );
+
+  // State for the last user who commented
   const [lastCommenter, setLastCommenter] = useState<string | null>(null);
 
+  // State for search query
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Memoized list of unique categories from posts
   const categories = useMemo(
     () => Array.from(new Set(posts.map((p) => p.category))),
     [posts],
   );
 
   // Persistence Effects
+  // Save current view to local storage
   useEffect(() => {
     localStorage.setItem("app_view", view);
   }, [view]);
 
+  // Save selected post ID to local storage
   useEffect(() => {
     if (selectedPost) {
       localStorage.setItem("app_post_id", String(selectedPost.id));
@@ -63,6 +77,7 @@ function App() {
     }
   }, [selectedPost]);
 
+  // Save selected category to local storage
   useEffect(() => {
     if (selectedCategory) {
       localStorage.setItem("app_category", selectedCategory);
@@ -71,6 +86,7 @@ function App() {
     }
   }, [selectedCategory]);
 
+  // Filter posts based on category and search query
   const filteredPosts = useMemo(() => {
     let result = posts;
 
@@ -90,6 +106,7 @@ function App() {
     return result;
   }, [posts, selectedCategory, searchQuery]);
 
+  // Handle adding a new comment
   const handleAddComment = (data: { user: string; text: string }) => {
     if (!selectedPost) return;
     const newComment: Comment = {
@@ -99,6 +116,7 @@ function App() {
       text: data.text,
       date: new Date().toLocaleDateString(),
     };
+    // Update comments state
     setComments((prev) => ({
       ...prev,
       [selectedPost.id]: [...(prev[selectedPost.id] || []), newComment],
@@ -106,12 +124,14 @@ function App() {
     setLastCommenter(data.user);
   };
 
+  // Handle navigation between views
   const handleNavigate = (
     viewName: "home" | "posts" | "categories" | "about" | "contact",
     reset?: boolean,
   ) => {
     setView(viewName);
     if (reset) {
+      // Reset filters if requested
       setSelectedCategory(null);
       setSelectedPost(null);
       setSearchQuery(""); // Clear search on explicit reset
@@ -141,7 +161,10 @@ function App() {
 
   return (
     <div className="app-wrapper">
+      {/* Navbar Component */}
       <Navbar onNavigate={handleNavigate} />
+
+      {/* Hero Section with Search */}
       <Hero
         searchQuery={searchQuery}
         onSearch={(q) => {
@@ -157,6 +180,8 @@ function App() {
           }
         }}
       />
+
+      {/* Main Content Area */}
       <main className="container main-content">
         {view === "contact" ? (
           <Contact />
@@ -265,6 +290,8 @@ function App() {
           </div>
         )}
       </main>
+
+      {/* Footer Section */}
       <footer className="footer">
         <p>&copy; 2026 DevPulse Blog. Built with React & TypeScript.</p>
         {lastCommenter && (

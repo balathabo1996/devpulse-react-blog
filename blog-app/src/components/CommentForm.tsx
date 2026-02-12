@@ -10,7 +10,7 @@ interface CommentFormProps {
   onSubmit: (data: CommentFormData) => void;
 }
 
-/** React Hook Form for submitting comments with validation. */
+// React Hook Form for submitting comments with validation.
 export function CommentForm({ onSubmit }: CommentFormProps) {
   const {
     register,

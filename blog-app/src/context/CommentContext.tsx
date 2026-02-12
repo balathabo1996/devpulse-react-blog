@@ -8,6 +8,7 @@ interface CommentContextType {
 
 const CommentContext = createContext<CommentContextType | undefined>(undefined);
 
+// Context Provider for managing comments across the application.
 export function CommentProvider({ children }: { children: React.ReactNode }) {
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
 
@@ -16,6 +17,7 @@ export function CommentProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("blog_comments");
     if (saved) {
       try {
+        // eslint-disable-next-line
         setComments(JSON.parse(saved));
       } catch (e) {
         console.error("Failed to parse comments", e);
@@ -30,6 +32,7 @@ export function CommentProvider({ children }: { children: React.ReactNode }) {
     }
   }, [comments]);
 
+  // Logic to add a new comment to a specific post.
   const addComment = (postId: number, user: string, text: string) => {
     const newComment: Comment = {
       id: Date.now(),
@@ -52,6 +55,7 @@ export function CommentProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Custom hook to consume the CommentContext.
 export function useComments() {
   const context = useContext(CommentContext);
   if (context === undefined) {

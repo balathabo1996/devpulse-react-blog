@@ -6,7 +6,7 @@ interface HeroProps {
   onSearch?: (query: string) => void;
 }
 
-/** Hero section with gradient text and glow background. */
+// Hero section with gradient text and glow background.
 export function Hero({ searchQuery, onSearch }: HeroProps) {
   return (
     <section className="hero-section">

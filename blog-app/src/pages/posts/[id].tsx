@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"; // Rebuild check
 import { useRouter } from "next/router";
 import { PostFullDetail } from "@/components/PostFullDetail";
 import { posts as staticPosts } from "@/data/posts";
-import type { Post, Comment } from "@/types";
+import type { Post } from "@/types";
 import { useComments } from "@/context/CommentContext";
 
 import Head from "next/head";
@@ -10,6 +10,7 @@ import Head from "next/head";
 export default function PostPage() {
   const router = useRouter();
 
+  // Retrieve post ID from URL query parameters
   const { id } = router.query;
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);

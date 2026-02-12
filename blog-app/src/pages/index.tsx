@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { PostList } from "@/components/PostList";
 import { CategoryList } from "@/components/CategoryList";
 import { PostDetail } from "@/components/PostDetail";
@@ -21,6 +19,7 @@ export default function Home() {
   const selectedPostId =
     typeof previewId === "string" ? Number(previewId) : null;
 
+  // Fetch initial posts and merge with static data
   useEffect(() => {
     async function fetchPosts() {
       try {
@@ -29,29 +28,31 @@ export default function Home() {
 
         const CATEGORIES = ["Engineering", "AI", "Career", "Tutorials"];
 
-        // Limit to 6 posts to show expanded content
-        const mappedPosts: Post[] = data.slice(0, 6).map((p: any) => {
-          // Check if we have a static post override for this ID
-          const staticPost = staticPosts.find((sp) => sp.id === p.id);
-          if (staticPost) {
-            return {
-              ...staticPost,
-              imageUrl:
-                staticPost.imageUrl || `/images/post${(p.id % 4) + 1}.jpg`,
-            };
-          }
+        // Limit to 6 posts for layout
+        const mappedPosts: Post[] = data
+          .slice(0, 6)
+          .map((p: { id: number; title: string; body: string }) => {
+            // Check for static override
+            const staticPost = staticPosts.find((sp) => sp.id === p.id);
+            if (staticPost) {
+              return {
+                ...staticPost,
+                imageUrl:
+                  staticPost.imageUrl || `/images/post${(p.id % 4) + 1}.jpg`,
+              };
+            }
 
-          // Fallback (shouldn't happen for first 4 if static data is complete)
-          return {
-            id: p.id,
-            title: p.title,
-            date: new Date().toLocaleDateString(),
-            excerpt: p.body.substring(0, 100) + "...",
-            content: p.body,
-            category: CATEGORIES[p.id % CATEGORIES.length],
-            imageUrl: `/images/post${(p.id % 4) + 1}.jpg`,
-          };
-        });
+            // Fallback for missing static data
+            return {
+              id: p.id,
+              title: p.title,
+              date: new Date().toLocaleDateString(),
+              excerpt: p.body.substring(0, 100) + "...",
+              content: p.body,
+              category: CATEGORIES[p.id % CATEGORIES.length],
+              imageUrl: `/images/post${(p.id % 4) + 1}.jpg`,
+            };
+          });
 
         setPosts(mappedPosts);
       } catch (err) {
@@ -63,10 +64,10 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  // Use fixed categories to ensure order matches original perfectly
+  // Fixed categories for consistent ordering
   const categories = ["Engineering", "AI", "Career", "Tutorials"];
 
-  // Filter posts
+  // Filter posts by category and search
   const filteredPosts = useMemo(() => {
     let result = posts;
 
@@ -86,14 +87,15 @@ export default function Home() {
     return result;
   }, [posts, selectedCategory, searchQuery]);
 
+  // Derive selected post from URL ID
   const selectedPost = useMemo(
     () => posts.find((p) => p.id === selectedPostId) || null,
     [posts, selectedPostId],
   );
 
+  // Update URL for post preview
   const handleSelectPost = (post: Post) => {
-    // For Home View, we show preview in sidebar (Split View)
-    // Update URL shallowly to persist state
+    // Show preview in sidebar (Split View)
     router.push(
       {
         pathname: "/",
@@ -111,7 +113,7 @@ export default function Home() {
     } else {
       delete query.category;
     }
-    // allow switching categories to keep preview? prefer clearing preview
+    // Clear preview when switching categories
     delete query.previewId;
 
     router.push({
@@ -158,7 +160,7 @@ export default function Home() {
                 </button>
               </>
             ) : searchQuery ? (
-              <>Search Results for "{searchQuery}"</>
+              <>Search Results for &quot;{searchQuery}&quot;</>
             ) : (
               "Recent Posts"
             )}

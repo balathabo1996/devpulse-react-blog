@@ -5,7 +5,7 @@ import type { Post, Comment } from "../types";
 import { CommentList } from "./CommentList";
 import { CommentForm } from "./CommentForm";
 
-/** Props for the PostDetail component. */
+// Props for the PostDetail component.
 interface PostDetailProps {
   post: Post;
   comments: Comment[];
@@ -13,7 +13,7 @@ interface PostDetailProps {
   onBack: () => void;
 }
 
-/** Displays full post content with comments and like button. */
+// Displays full post content with comments and like button.
 export function PostDetail({
   post,
   comments,
@@ -47,4 +47,4 @@ export function PostDetail({
   );
 }
 
-/** Simple Like Button component with state. */
+// Simple Like Button component with state.

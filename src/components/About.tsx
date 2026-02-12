@@ -1,7 +1,7 @@
 // About Page: Displays information about the blog and its authors
 import { Code, Cpu, Globe, Zap } from "lucide-react";
 
-/** About Page Component. */
+// About Page Component.
 export function About() {
   return (
     <div className="layout-grid">

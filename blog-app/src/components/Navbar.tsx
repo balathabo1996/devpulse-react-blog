@@ -4,7 +4,7 @@ import { Terminal } from "lucide-react";
 import React from "react";
 import { useRouter } from "next/router";
 
-/** Sticky Navigation Bar with glassmorphism effects and internal routing. */
+// Sticky Navigation Bar with glassmorphism effects and internal routing.
 export function Navbar() {
   const router = useRouter();
 

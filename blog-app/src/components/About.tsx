@@ -1,7 +1,8 @@
-// About Page: Displays information about the blog and its authors
+// About Page: Displays blog and author info
 import { Code, Cpu, Globe, Zap } from "lucide-react";
+import Image from "next/image";
 
-/** About Page Component. */
+// About Page Component
 export function About() {
   return (
     <div className="layout-grid">
@@ -17,11 +18,28 @@ export function About() {
           content.
         </p>
 
-        <img
-          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"
-          alt="Team collaborating"
-          className="hero-image-full"
-        />
+        <div
+          className="hero-image-full relative"
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "auto",
+            minHeight: "400px",
+          }}
+        >
+          <Image
+            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"
+            alt="Team collaborating"
+            width={1200}
+            height={600}
+            style={{
+              width: "100%",
+              height: "auto",
+              borderRadius: "var(--radius)",
+            }}
+            priority
+          />
+        </div>
 
         <div className="feature-grid">
           <div className="widget feature-card">

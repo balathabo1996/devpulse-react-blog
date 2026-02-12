@@ -4,6 +4,7 @@ import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { Footer } from "./Footer";
 
+// Props for the Layout component.
 interface LayoutProps {
   children: React.ReactNode;
 }

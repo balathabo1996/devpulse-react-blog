@@ -7,6 +7,7 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment }: CommentItemProps) {
+  // Render individual comment with avatar and metadata
   return (
     <div className="comment-item">
       <div className="comment-avatar-container">

@@ -5,6 +5,7 @@ import { CommentProvider } from "@/context/CommentContext";
 
 import Head from "next/head";
 
+// Main App component wrapping the application with metadata and layout.
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <CommentProvider>

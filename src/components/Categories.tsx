@@ -13,7 +13,7 @@ const categoryImages: Record<string, string> = {
   Tutorials: "/images/cat-tutorials.jpg",
 };
 
-/** Categories Page Component displaying available topics. */
+// Categories Page Component displaying available topics.
 export function Categories({ categories, onSelectCategory }: CategoriesProps) {
   return (
     <div className="layout-grid">

@@ -2,7 +2,7 @@
 import { Terminal } from "lucide-react";
 import React from "react";
 
-/** Props for the Navbar component. */
+// Props for the Navbar component.
 interface NavbarProps {
   onNavigate: (
     view: "home" | "posts" | "categories" | "about" | "contact",
@@ -10,7 +10,7 @@ interface NavbarProps {
   ) => void;
 }
 
-/** Sticky Navigation Bar with glassmorphism effects and internal routing. */
+// Sticky Navigation Bar with glassmorphism effects and internal routing.
 export function Navbar({ onNavigate }: NavbarProps) {
   const handleNavClick = (
     e: React.MouseEvent,

@@ -5,6 +5,7 @@ interface CommentItemProps {
   comment: Comment;
 }
 
+// Displays a single comment with user info and date
 export function CommentItem({ comment }: CommentItemProps) {
   // Generate initials from user name
   const initials = comment.user

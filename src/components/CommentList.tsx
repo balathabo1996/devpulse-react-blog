@@ -2,12 +2,12 @@
 import type { Comment } from "../types";
 import { CommentItem } from "./CommentItem";
 
-/** Props for the CommentList component. */
+// Props for the CommentList component.
 interface CommentListProps {
   comments: Comment[];
 }
 
-/** Renders a list of user comments. */
+// Renders a list of user comments.
 export function CommentList({ comments }: CommentListProps) {
   if (comments.length === 0) {
     return (

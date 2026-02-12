@@ -1,26 +1,24 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Categories } from "@/components/Categories";
-import type { Post } from "@/types";
 
+// Categories Page: Displays and handles category selection.
 export default function CategoriesPage() {
+  // State for storing list of categories
   const [categories, setCategories] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    // We need to fetch posts to know categories, or just hardcode/fetch categories list.
-    // Fetching posts is safer to match Home.
+    // Fetch posts to derive categories dynamically
     async function fetchCategories() {
-       const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-       const data = await res.json();
-       const CATEGORIES = ["Engineering", "AI", "Career", "Tutorials"];
-       // In a real app we'd get unique categories from data, 
-       // but here we are synthesizing them.
-       // Let's just use our static list for simplicity + data derived ones.
-       
-       // actually, let's map data to get same consistent random categories
-       const derived = new Set<string>(data.map((p: any) => CATEGORIES[p.id % CATEGORIES.length]));
-       setCategories(Array.from(derived));
+      const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+      const data = await res.json();
+      const CATEGORIES = ["Engineering", "AI", "Career", "Tutorials"];
+      // Sinthesize categories from post data
+      const derived = new Set<string>(
+        data.map((p: { id: number }) => CATEGORIES[p.id % CATEGORIES.length]),
+      );
+      setCategories(Array.from(derived));
     }
     fetchCategories();
   }, []);
@@ -31,10 +29,10 @@ export default function CategoriesPage() {
 
   return (
     <div className="container" style={{ marginTop: "2rem" }}>
-       <Categories 
-          categories={categories} 
-          onSelectCategory={handleSelectCategory}
-       />
+      <Categories
+        categories={categories}
+        onSelectCategory={handleSelectCategory}
+      />
     </div>
   );
 }

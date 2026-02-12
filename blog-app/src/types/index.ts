@@ -1,7 +1,5 @@
 // Type Definitions: Shared TypeScript interfaces for Blog Posts, Categories, and Comments
-/**
- * Represents a Blog Post.
- */
+// Represents a Blog Post.
 export interface Post {
   id: number;
   title: string;
@@ -12,9 +10,7 @@ export interface Post {
   imageUrl: string;
 }
 
-/**
- * Represents a User Comment.
- */
+// Represents a User Comment.
 export interface Comment {
   id: number;
   postId: number;

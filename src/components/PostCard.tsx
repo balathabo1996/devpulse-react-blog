@@ -2,13 +2,13 @@
 import { Calendar } from "lucide-react";
 import type { Post } from "../types";
 
-/** Props for the PostCard component. */
+// Props for the PostCard component.
 interface PostCardProps {
   post: Post;
   onClick: (post: Post) => void;
 }
 
-/** Horizontal card component displaying post summary with hover effects. */
+// Horizontal card component displaying post summary with hover effects.
 export function PostCard({ post, onClick }: PostCardProps) {
   return (
     <article

@@ -1,7 +1,7 @@
 // Mock Data: Contains static blog post data for development
 import type { Post } from "@/types";
 
-/** Static array of blog posts used as mock data. */
+// Static array of blog posts used as mock data.
 export const posts: Post[] = [
   {
     id: 1,
@@ -48,7 +48,8 @@ export const posts: Post[] = [
     id: 5,
     title: "Next.js 14 Features",
     date: "2025-02-01",
-    excerpt: "Everything you need to know about Server Actions and Partial Prerendering.",
+    excerpt:
+      "Everything you need to know about Server Actions and Partial Prerendering.",
     content:
       "Next.js 14 introduces Server Actions, a stable way to handle form submissions and data mutations without manually creating API routes. Partial Prerendering is another game-changer, allowing you to mix static and dynamic content in the same route with optimal performance.",
     category: "Engineering",
@@ -63,5 +64,5 @@ export const posts: Post[] = [
       "TypeScript is industry standard for a reason. Generics, Union Types, and Utility Types like Pick and Omit can save you hours of debugging. In React, properly typing props and using discriminating unions for component states leads to rock-solid applications.",
     category: "Tutorials",
     imageUrl: "/images/post6.jpg",
-  }
+  },
 ];

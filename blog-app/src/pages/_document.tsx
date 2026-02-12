@@ -1,5 +1,6 @@
 import { Html, Head, Main, NextScript } from "next/document";
 
+// Custom Document component to set up the HTML structure and fonts.
 export default function Document() {
   return (
     <Html lang="en">

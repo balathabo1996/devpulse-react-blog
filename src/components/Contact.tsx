@@ -9,7 +9,7 @@ interface ContactFormData {
   message: string;
 }
 
-/** Contact Page Component with form and info details. */
+// Contact Page Component with form and info details.
 export function Contact() {
   const {
     register,

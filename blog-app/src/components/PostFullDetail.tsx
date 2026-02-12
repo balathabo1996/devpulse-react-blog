@@ -12,7 +12,7 @@ interface PostFullDetailProps {
   onBack: () => void;
 }
 
-/** Full-page Post Detail with hero image and large typography. */
+// Full-page Post Detail with hero image and large typography.
 export function PostFullDetail({
   post,
   comments,
