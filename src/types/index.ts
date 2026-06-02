@@ -3,22 +3,26 @@
  * Represents a Blog Post.
  */
 export interface Post {
-  id: number;
+  id: string | number;
   title: string;
   date: string;
   excerpt: string;
   content: string;
   category: string;
   imageUrl: string;
+  likes?: string[];
+  views?: number;
 }
 
 /**
  * Represents a User Comment.
  */
 export interface Comment {
-  id: number;
-  postId: number;
+  id: string | number;
+  postId: string | number;
   user: string;
-  text: string;
+  userEmail: string;
+  userAvatar?: string;
   date: string;
+  text: string;
 }

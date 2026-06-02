@@ -18,9 +18,9 @@ export function PostCard({ post, onClick }: PostCardProps) {
         backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.2)), url(${post.imageUrl})`,
       }}
     >
-      <div className="card-content" style={{ zIndex: 2, width: "100%" }}>
-        <div className="card-header card-header-mb">
-          <div>
+      <div className="card-content" style={{ zIndex: 2, minWidth: 0, width: "100%" }}>
+        <div className="card-header card-header-mb" style={{ minWidth: 0, width: "100%" }}>
+          <div style={{ minWidth: 0, flex: 1, width: "100%" }}>
             <div className="card-meta card-meta-mb">
               <span className="card-category">{post.category}</span>
               <span className="meta-separator">•</span>

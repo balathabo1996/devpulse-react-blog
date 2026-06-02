@@ -7,11 +7,20 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment }: CommentItemProps) {
+  // Get initial for fallback avatar
+  const initial = comment.user ? comment.user.charAt(0).toUpperCase() : '?';
+
   // Render individual comment with avatar and metadata
   return (
     <div className="comment-item">
       <div className="comment-avatar-container">
-        <User size={20} color="var(--text-muted)" />
+        {comment.userAvatar ? (
+          <img src={comment.userAvatar} alt={`${comment.user}'s avatar`} className="comment-avatar-img" />
+        ) : (
+          <div className="comment-avatar-fallback">
+            {initial}
+          </div>
+        )}
       </div>
       <div>
         <div className="comment-meta">

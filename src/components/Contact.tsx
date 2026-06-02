@@ -1,6 +1,8 @@
 // Contact Page: Contact form handling user inquiries
 import { Send, Mail, MapPin, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import axios from "axios";
 
 interface ContactFormData {
   name: string;
@@ -11,19 +13,34 @@ interface ContactFormData {
 
 // Contact Page Component with form and info details.
 export function Contact() {
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitSuccessful },
+    formState: { errors },
   } = useForm<ContactFormData>({
     mode: "onChange",
   });
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log("Contact Form Data:", data);
-    // Simulate generic "send" action
-    reset();
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSending(true);
+    setSubmitError("");
+    setShowSuccess(false);
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/contact`, data);
+      reset();
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 5000);
+    } catch (error) {
+      setSubmitError("Failed to send message. Please try again later.");
+      console.error(error);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -32,9 +49,14 @@ export function Contact() {
       <div className="widget">
         <h2 className="widget-title">Get in Touch</h2>
 
-        {isSubmitSuccessful && (
+        {showSuccess && !submitError && (
           <div className="success-message">
             Thank you for reaching out! We will get back to you shortly.
+          </div>
+        )}
+        {submitError && (
+          <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>
+            {submitError}
           </div>
         )}
 
@@ -113,8 +135,9 @@ export function Contact() {
           <button
             type="submit"
             className="btn btn-primary contact-button-wrapper"
+            disabled={isSending}
           >
-            <Send size={18} /> Send Message
+            <Send size={18} /> {isSending ? "Sending..." : "Send Message"}
           </button>
         </form>
       </div>
@@ -130,8 +153,7 @@ export function Contact() {
               </div>
               <div>
                 <h4 className="contact-item-title">Email Us</h4>
-                <p className="contact-item-text">hello@devpulse.com</p>
-                <p className="contact-item-text">support@devpulse.com</p>
+                <p className="contact-item-text">balathabo96@gmail.com</p>
               </div>
             </div>
 
@@ -141,8 +163,7 @@ export function Contact() {
               </div>
               <div>
                 <h4 className="contact-item-title">Visit Us</h4>
-                <p className="contact-item-text">38 Florens Ave</p>
-                <p className="contact-item-text">Toronto, ON M1L 1R6</p>
+                <p className="contact-item-text">Scarborough, ON</p>
               </div>
             </div>
 

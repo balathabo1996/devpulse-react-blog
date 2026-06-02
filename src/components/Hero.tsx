@@ -3,11 +3,12 @@ import { Search } from "lucide-react";
 
 interface HeroProps {
   searchQuery?: string;
+  showSearch?: boolean;
   onSearch?: (query: string) => void;
 }
 
 // Hero section with gradient text and glow background.
-export function Hero({ searchQuery, onSearch }: HeroProps) {
+export function Hero({ searchQuery, showSearch = true, onSearch }: HeroProps) {
   return (
     <section className="hero-section">
       <div className="hero-glow" />
@@ -22,18 +23,20 @@ export function Hero({ searchQuery, onSearch }: HeroProps) {
             <span className="text-primary">dreamers</span>.
           </p>
         </div>
-        <div className="hero-search-wrapper">
-          <div className="search-container">
-            <Search className="search-icon" size={20} />
-            <input
-              type="text"
-              placeholder="Search articles..."
-              className="hero-search-input"
-              value={searchQuery || ""}
-              onChange={(e) => onSearch?.(e.target.value)}
-            />
+        {showSearch && (
+          <div className="hero-search-wrapper">
+            <div className="search-container">
+              <Search className="search-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                className="hero-search-input"
+                value={searchQuery || ""}
+                onChange={(e) => onSearch?.(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

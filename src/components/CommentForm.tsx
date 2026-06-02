@@ -1,77 +1,80 @@
 // Comment Form: Input form for users to add new comments
 import { useForm } from "react-hook-form";
-import { Send } from "lucide-react";
+import { Send, LogIn, PenLine } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface CommentFormData {
-  user: string;
   text: string;
 }
 interface CommentFormProps {
-  onSubmit: (data: CommentFormData) => void;
+  onSubmit: (data: { user: string; text: string }) => void;
 }
 
-// React Hook Form for submitting comments with validation.
 export function CommentForm({ onSubmit }: CommentFormProps) {
+  const { user, signInWithGoogle } = useAuth();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CommentFormData>({
-    mode: "onChange",
-  });
+  } = useForm<CommentFormData>({ mode: "onChange" });
 
   const onFormSubmit = (data: CommentFormData) => {
-    onSubmit(data);
+    onSubmit({ user: "", text: data.text });
     reset();
   };
 
-  return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="comment-form">
-      <h3 className="widget-title">Add a Comment</h3>
+  if (!user) {
+    return (
+      <div className="comment-login-prompt">
+        <div className="comment-login-icon">
+          <PenLine size={48} color="var(--primary)" strokeWidth={1.5} />
+        </div>
+        <p className="comment-login-title">Join the conversation</p>
+        <p className="comment-login-sub">Sign in to leave a comment and interact with the community.</p>
+        <button onClick={signInWithGoogle} className="comment-login-btn">
+          <LogIn size={16} />
+          Sign in with Google
+        </button>
+      </div>
+    );
+  }
 
-      <div className="form-group">
-        <label htmlFor="user" className="form-label">
-          Name <span className="form-required">*</span>
-        </label>
-        <input
-          id="user"
-          {...register("user", {
-            required: "Name is required",
-            minLength: {
-              value: 2,
-              message: "Name must be at least 2 characters",
-            },
-          })}
-          className={`form-input ${errors.user ? "error" : ""}`}
-          placeholder="John Doe"
-        />
-        {errors.user && <p className="form-error">{errors.user.message}</p>}
+  return (
+    <form onSubmit={handleSubmit(onFormSubmit)} className="comment-form-styled">
+      <div className="comment-form-header">
+        <div className="comment-form-avatar">
+          {user.photoURL
+            ? <img src={user.photoURL} alt={user.displayName || ""} />
+            : <span>{(user.displayName || user.email || "?").charAt(0).toUpperCase()}</span>
+          }
+        </div>
+        <div className="comment-form-user">
+          <span className="comment-form-username">{user.displayName || user.email}</span>
+          <span className="comment-form-hint">Commenting as yourself</span>
+        </div>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="text" className="form-label">
-          Comment <span className="form-required">*</span>
-        </label>
+      <div className="comment-form-body">
         <textarea
           id="text"
           rows={4}
           {...register("text", {
             required: "Comment is required",
-            minLength: {
-              value: 10,
-              message: "Comment must be at least 10 characters",
-            },
+            minLength: { value: 10, message: "Must be at least 10 characters" },
           })}
-          className={`form-input resize-vertical ${errors.text ? "error" : ""}`}
-          placeholder="Share your thoughts..."
+          className={`comment-textarea ${errors.text ? "error" : ""}`}
+          placeholder="Share your thoughts on this article..."
         />
         {errors.text && <p className="form-error">{errors.text.message}</p>}
       </div>
 
-      <button type="submit" className="btn btn-primary btn-with-icon">
-        <Send size={16} /> Post Comment
-      </button>
+      <div className="comment-form-footer">
+        <button type="submit" className="comment-submit-btn">
+          <Send size={15} />
+          Post Comment
+        </button>
+      </div>
     </form>
   );
 }

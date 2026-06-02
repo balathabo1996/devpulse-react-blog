@@ -1,6 +1,6 @@
-// App Component: Main application component handling routing and layout structure
-import { useState, useMemo, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Loader2, Sparkles, Briefcase, Cloud, Wrench, Shield, BookOpen, LayoutGrid } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { PostList } from "./components/PostList";
@@ -9,75 +9,46 @@ import { PostFullDetail } from "./components/PostFullDetail";
 import { CategoryList } from "./components/CategoryList";
 import { Contact } from "./components/Contact";
 import { About } from "./components/About";
-import { Categories } from "./components/Categories";
-import { posts as initialPosts } from "./data/posts";
-import type { Post, Comment } from "./types";
+import { CategorySection } from "./components/CategorySection";
+import { Login } from "./components/Login";
+import { AdminDashboard } from "./components/AdminDashboard";
+import { Settings } from "./components/Settings";
+import { Footer } from "./components/Footer";
+import { usePosts, useCategories } from "./hooks/usePosts";
+import { useComments } from "./hooks/useComments";
+import type { Post } from "./types";
 
 // Main Application Component: Manages state, routing, and layout.
 function App() {
-  // State for current view (routing)
   const [view, setView] = useState<
-    "home" | "posts" | "categories" | "about" | "contact"
+    "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings"
   >(() => {
-    // Initialize view from local storage or default to 'home'
     const saved = localStorage.getItem("app_view");
-    const validViews = ["home", "posts", "categories", "about", "contact"];
+    const validViews = ["home", "posts", "about", "contact", "login", "admin", "settings"];
     return validViews.includes(saved || "")
-      ? (saved as "home" | "posts" | "categories" | "about" | "contact")
+      ? (saved as "home" | "posts" | "about" | "contact" | "login" | "admin")
       : "home";
   });
 
-  // State for posts data
-  const [posts] = useState<Post[]>(initialPosts);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const { comments, addComment } = useComments(selectedPost?.id || null);
 
-  // State for currently selected post
-  const [selectedPost, setSelectedPost] = useState<Post | null>(() => {
-    // Initialize selected post from local storage
-    const savedId = localStorage.getItem("app_post_id");
-    return savedId
-      ? initialPosts.find((p) => p.id === Number(savedId)) || null
-      : null;
-  });
-
-  // State for comments, mapped by post ID
-  const [comments, setComments] = useState<Record<number, Comment[]>>({});
-
-  // State for currently selected category
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    () => {
-      // Initialize selected category from local storage
-      return localStorage.getItem("app_category");
-    },
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() =>
+    localStorage.getItem("app_category"),
   );
 
-  // State for the last user who commented
-  const [lastCommenter, setLastCommenter] = useState<string | null>(null);
-
-  // State for search query
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Memoized list of unique categories from posts
-  const categories = useMemo(
-    () => Array.from(new Set(posts.map((p) => p.category))),
-    [posts],
+  const { posts, loading, hasMore, loadMore, likePost, viewPost } = usePosts(
+    selectedCategory,
+    searchQuery,
   );
+  const categories = useCategories();
 
-  // Persistence Effects
-  // Save current view to local storage
   useEffect(() => {
     localStorage.setItem("app_view", view);
   }, [view]);
 
-  // Save selected post ID to local storage
-  useEffect(() => {
-    if (selectedPost) {
-      localStorage.setItem("app_post_id", String(selectedPost.id));
-    } else {
-      localStorage.removeItem("app_post_id");
-    }
-  }, [selectedPost]);
-
-  // Save selected category to local storage
   useEffect(() => {
     if (selectedCategory) {
       localStorage.setItem("app_category", selectedCategory);
@@ -86,122 +57,130 @@ function App() {
     }
   }, [selectedCategory]);
 
-  // Filter posts based on category and search query
-  const filteredPosts = useMemo(() => {
-    let result = posts;
-
-    if (selectedCategory) {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(query) ||
-          p.excerpt.toLowerCase().includes(query),
-      );
-    }
-
-    return result;
-  }, [posts, selectedCategory, searchQuery]);
-
-  // Handle adding a new comment
-  const handleAddComment = (data: { user: string; text: string }) => {
+  const handleAddComment = async (data: { user: string; text: string }) => {
     if (!selectedPost) return;
-    const newComment: Comment = {
-      id: Date.now(),
-      postId: selectedPost.id,
-      user: data.user,
-      text: data.text,
-      date: new Date().toLocaleDateString(),
-    };
-    // Update comments state
-    setComments((prev) => ({
-      ...prev,
-      [selectedPost.id]: [...(prev[selectedPost.id] || []), newComment],
-    }));
-    setLastCommenter(data.user);
+    try {
+      await addComment(data.text);
+    } catch (err) {
+      alert("Please login to comment!");
+    }
   };
 
-  // Handle navigation between views
   const handleNavigate = (
-    viewName: "home" | "posts" | "categories" | "about" | "contact",
+    viewName: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings",
     reset?: boolean,
   ) => {
     setView(viewName);
     if (reset) {
-      // Reset filters if requested
       setSelectedCategory(null);
       setSelectedPost(null);
-      setSearchQuery(""); // Clear search on explicit reset
+      setSearchQuery("");
       return;
     }
-    // Case logic for internal navigation (e.g. from Categories to Posts) without reset
     switch (viewName) {
       case "home":
-        setSelectedPost(null);
-        setSelectedCategory(null);
-        break;
       case "posts":
-        setSelectedPost(null);
-        break;
-      case "categories":
-        setSelectedPost(null);
-        break;
       case "about":
-        setSelectedPost(null);
-        setSelectedCategory(null);
-        break; // Placeholder for About
       case "contact":
+      case "login":
+      case "admin":
         setSelectedPost(null);
+        if (viewName !== "posts") {
+          setSelectedCategory(null);
+        }
         break;
     }
   };
 
+  const getPageTitle = () => {
+    if (selectedPost) return `${selectedPost.title} - DevPulse`;
+    if (view === "about") return "About - DevPulse";
+    if (view === "contact") return "Contact Us - DevPulse";
+    if (view === "login") return "Login - DevPulse";
+    if (view === "admin") return "Admin Dashboard - DevPulse";
+    if (selectedCategory) return `${selectedCategory} Articles - DevPulse`;
+    if (searchQuery) return `Search: ${searchQuery} - DevPulse`;
+    return "DevPulse - The Modern Developer Blog";
+  };
+
+  const LoadMoreButton = () => {
+    if (!hasMore) return null;
+    return (
+      <div
+        style={{ textAlign: "center", marginTop: "2rem", marginBottom: "2rem" }}
+      >
+        <button
+          onClick={loadMore}
+          className="btn btn-ghost"
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "1rem",
+            border: "1px solid var(--border-color)",
+          }}
+        >
+          {loading ? (
+            <Loader2 className="animate-spin" style={{ display: "inline" }} />
+          ) : (
+            "Load More Posts"
+          )}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="app-wrapper">
-      {/* Navbar Component */}
-      <Navbar onNavigate={handleNavigate} />
-
-      {/* Hero Section with Search */}
+      {/* Dynamic Background Image */}
+      {selectedPost && (
+        <div
+          className="dynamic-bg animate-fade-in"
+          style={{ backgroundImage: `url(${selectedPost.imageUrl})` }}
+        />
+      )}
+      <Helmet>
+        <title>{getPageTitle()}</title>
+        <meta
+          name="description"
+          content={
+            selectedPost
+              ? selectedPost.excerpt
+              : "DevPulse is a modern developer blog covering React, Node.js, and web development."
+          }
+        />
+      </Helmet>
+      <Navbar currentView={view} onNavigate={handleNavigate} />
       <Hero
         searchQuery={searchQuery}
+        showSearch={view === "home" || view === "posts"}
         onSearch={(q) => {
           setSearchQuery(q);
-          if (q && view !== "posts") {
-            // If searching from other views, switch to home list view to show results
-            if (view !== "home") {
-              setView("home");
-              setSelectedPost(null);
-              setSelectedCategory(null);
-              // Do NOT clear searchQuery here
-            }
+          if (q && view !== "posts" && view !== "home") {
+            setView("home");
+            setSelectedPost(null);
+            setSelectedCategory(null);
           }
         }}
       />
-
-      {/* Main Content Area */}
       <main className="container main-content">
-        {view === "contact" ? (
+        {view === "admin" ? (
+          <AdminDashboard onNavigate={handleNavigate} />
+        ) : view === "settings" ? (
+          <Settings />
+        ) : view === "login" ? (
+          <Login onNavigate={handleNavigate} />
+        ) : view === "contact" ? (
           <Contact />
         ) : view === "about" ? (
           <About />
-        ) : view === "categories" ? (
-          <Categories
-            categories={categories}
-            onSelectCategory={(cat) => {
-              setSelectedCategory(cat);
-              handleNavigate("posts"); // Redirect to posts view filtered by category
-            }}
-          />
         ) : view === "posts" ? (
-          // Full Page Layout for 'Posts' tab
           selectedPost ? (
             <PostFullDetail
               post={selectedPost}
-              comments={comments[selectedPost.id] || []}
+              comments={comments}
               onAddComment={handleAddComment}
+              onLike={likePost}
+              onView={viewPost}
               onBack={() => setSelectedPost(null)}
             />
           ) : (
@@ -209,77 +188,146 @@ function App() {
               <div className="widget widget-full-width">
                 <h1 className="hero-title hero-title-large">
                   {selectedCategory ? (
-                    <div className="category-header">
-                      <button
-                        onClick={() => handleNavigate("categories")}
-                        className="btn btn-ghost btn-back-category"
-                      >
-                        <ArrowLeft size={16} className="icon-margin-right" />{" "}
-                        Back to Categories
-                      </button>
-                      <span>
-                        <span className="text-gradient">
-                          {selectedCategory}
-                        </span>{" "}
-                        Posts
-                      </span>
-                    </div>
+                    <>
+                      <span className="text-gradient">{selectedCategory}</span>{" "}
+                      Posts
+                    </>
                   ) : (
                     <>
                       All <span className="text-gradient">Posts</span>
                     </>
                   )}
                 </h1>
+
+                <div className="category-filter-container">
+                  <button
+                    className={`filter-chip ${!selectedCategory ? "active" : ""}`}
+                    onClick={() => setSelectedCategory(null)}
+                  >
+                    <LayoutGrid size={16} className="filter-chip-icon" />
+                    <span>All</span>
+                  </button>
+                  {categories.map((cat) => {
+                    const iconMap: Record<string, React.ReactNode> = {
+                      "AI": <Sparkles size={16} className="filter-chip-icon" />,
+                      "Career": <Briefcase size={16} className="filter-chip-icon" />,
+                      "Cloud": <Cloud size={16} className="filter-chip-icon" />,
+                      "Engineering": <Wrench size={16} className="filter-chip-icon" />,
+                      "Security": <Shield size={16} className="filter-chip-icon" />,
+                      "Tutorials": <BookOpen size={16} className="filter-chip-icon" />,
+                    };
+                    return (
+                      <button
+                        key={cat}
+                        className={`filter-chip ${selectedCategory === cat ? "active" : ""}`}
+                        onClick={() => setSelectedCategory(cat)}
+                      >
+                        {iconMap[cat]}
+                        <span>{cat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className="post-list-wrapper-max-width">
                   <PostList
-                    posts={filteredPosts}
+                    posts={posts}
                     onSelect={(post) => {
                       setSelectedPost(post);
-                      window.scrollTo(0, 0); // Scroll to top when opening a post
+                      window.scrollTo(0, 0);
                     }}
                   />
+                  {posts.length === 0 && !loading && (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        color: "var(--text-muted)",
+                        padding: "2rem",
+                      }}
+                    >
+                      No posts found.
+                    </p>
+                  )}
+                  <LoadMoreButton />
                 </div>
               </div>
             </div>
           )
         ) : (
-          // Default Home Layout (Split View)
           <div className="layout-grid">
             <div>
-              <div className="section-header">
-                <h2 className="section-title">
-                  {selectedCategory
-                    ? `${selectedCategory} Articles`
-                    : "Recent Posts"}
-                </h2>
-                <PostList posts={filteredPosts} onSelect={setSelectedPost} />
-              </div>
+              {!selectedCategory && !searchQuery ? (
+                <>
+                  {categories.map((cat) => (
+                    <CategorySection
+                      key={cat}
+                      category={cat}
+                      onSelectPost={(post) => {
+                        setSelectedPost(post);
+                        setView("posts");
+                        window.scrollTo(0, 0);
+                      }}
+                      onViewCategory={(c) => {
+                        setSelectedCategory(c);
+                        window.scrollTo(0, 0);
+                      }}
+                    />
+                  ))}
+                  {categories.length === 0 && !loading && (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        color: "var(--text-muted)",
+                        padding: "2rem",
+                      }}
+                    >
+                      No categories found.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="section-header">
+                  <h2 className="section-title">
+                    {searchQuery
+                      ? `Search Results`
+                      : `${selectedCategory} Articles`}
+                  </h2>
+                  <PostList
+                    posts={posts}
+                    onSelect={(post) => {
+                      setSelectedPost(post);
+                      setView("posts");
+                      window.scrollTo(0, 0);
+                    }}
+                  />
+                  {posts.length === 0 && !loading && (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        color: "var(--text-muted)",
+                        padding: "2rem",
+                      }}
+                    >
+                      No posts found.
+                    </p>
+                  )}
+                  <LoadMoreButton />
+                </div>
+              )}
             </div>
             <aside className="sidebar">
               <div className="widget">
-                <h3 className="widget-title">
-                  {selectedPost ? "Selected Post" : "About"}
-                </h3>
-                {selectedPost ? (
-                  <PostDetail
-                    post={selectedPost}
-                    comments={comments[selectedPost.id] || []}
-                    onAddComment={handleAddComment}
-                    onBack={() => setSelectedPost(null)}
-                  />
-                ) : (
-                  <div className="widget-empty">
-                    <p>
-                      Welcome to DevPulse. Select a post from the list to read
-                      more details and leave comments.
-                    </p>
-                    <br />
-                    <p>
-                      This blog attempts to demonstrate modern React patterns
-                      including State, Props, and Forms.
-                    </p>
-                  </div>
-                )}
+                <h3 className="widget-title">About</h3>
+                <div className="widget-empty">
+                  <p>
+                    Welcome to DevPulse. Click on any post to read the full
+                    article and leave comments.
+                  </p>
+                  <br />
+                  <p>
+                    This blog is now real-time! Try opening it in multiple tabs.
+                  </p>
+                </div>
               </div>
               <CategoryList
                 categories={categories}
@@ -290,16 +338,7 @@ function App() {
           </div>
         )}
       </main>
-
-      {/* Footer Section */}
-      <footer className="footer">
-        <p>&copy; 2026 DevPulse Blog. Built with React & TypeScript.</p>
-        {lastCommenter && (
-          <p className="footer-note">
-            👋 Thanks for contributing, {lastCommenter}!
-          </p>
-        )}
-      </footer>
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
 }

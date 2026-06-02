@@ -1,14 +1,17 @@
 // Blog Post Page: Main view for a specific blog post including comments
-import { ArrowLeft, Calendar, Tag, ThumbsUp } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Calendar, Tag, ThumbsUp, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { Post, Comment } from "../types";
 import { CommentList } from "./CommentList";
 import { CommentForm } from "./CommentForm";
+import { useAuth } from "../context/AuthContext";
 
 interface PostFullDetailProps {
   post: Post;
   comments: Comment[];
   onAddComment: (data: { user: string; text: string }) => void;
+  onLike: (id: string | number) => Promise<void>;
+  onView: (id: string | number) => Promise<void>;
   onBack: () => void;
 }
 
@@ -17,18 +20,34 @@ export function PostFullDetail({
   post,
   comments,
   onAddComment,
+  onLike,
+  onView,
   onBack,
 }: PostFullDetailProps) {
-  const [likes, setLikes] = useState(0);
-  const [hasLiked, setHasLiked] = useState(false);
+  const { user, signInWithGoogle } = useAuth();
+  
+  useEffect(() => {
+    onView(post.id);
+  }, [post.id, onView]);
 
-  const handleLike = () => {
-    if (hasLiked) {
-      setLikes((p) => p - 1);
-      setHasLiked(false);
-    } else {
-      setLikes((p) => p + 1);
-      setHasLiked(true);
+  const [isLiking, setIsLiking] = useState(false);
+  const likesCount = post.likes?.length || 0;
+  const hasLiked = user?.email && post.likes?.includes(user.email);
+
+  const handleLike = async () => {
+    if (!user) {
+      try {
+        await signInWithGoogle();
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+      return;
+    }
+    setIsLiking(true);
+    try {
+      await onLike(post.id);
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -58,6 +77,9 @@ export function PostFullDetail({
               </span>
               <span className="meta-item">
                 <Tag size={18} /> {post.category}
+              </span>
+              <span className="meta-item">
+                <Eye size={18} /> {post.views || 0} views
               </span>
             </div>
           </div>
@@ -98,14 +120,25 @@ export function PostFullDetail({
           <div className="full-detail-like-container">
             <button
               onClick={handleLike}
-              className={`btn btn-with-icon like-btn-large ${hasLiked ? "btn-primary like-btn-active" : "btn-ghost like-btn-inactive"}`}
+              disabled={isLiking}
+              className={`like-btn-styled ${hasLiked ? "like-btn-liked" : ""}`}
             >
-              <ThumbsUp size={20} fill={hasLiked ? "currentColor" : "none"} />{" "}
-              {likes > 0 ? `${likes} Likes` : "Like this post"}
+              <span className="like-btn-heart">
+                {hasLiked ? "❤️" : "🤍"}
+              </span>
+              <span className="like-btn-label">
+                {isLiking
+                  ? "..."
+                  : hasLiked
+                  ? `${likesCount} Liked!`
+                  : likesCount > 0
+                  ? `${likesCount} Likes`
+                  : "Like this post"}
+              </span>
             </button>
           </div>
 
-          <div className="widget">
+          <div className="comments-section-wrapper">
             <CommentList comments={comments} />
             <CommentForm onSubmit={onAddComment} />
           </div>
