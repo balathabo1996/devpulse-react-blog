@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useAuth } from "../context/AuthContext";
-import { Loader2, PlusCircle, CheckCircle, Users, FileText, Trash2 } from "lucide-react";
+import { Loader2, PlusCircle, CheckCircle, Users, FileText, Trash2, Edit, List } from "lucide-react";
 
 interface AdminUser {
   uid: string;
@@ -19,10 +19,16 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<"posts" | "users">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "manage_posts" | "users">("posts");
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [postsList, setPostsList] = useState<any[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const [errorPosts, setErrorPosts] = useState<string | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
 
   const [usersList, setUsersList] = useState<AdminUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -54,8 +60,27 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   useEffect(() => {
     if (activeTab === "users" && token) {
       fetchUsers();
+    } else if (activeTab === "manage_posts" && token) {
+      fetchAdminPosts();
     }
   }, [activeTab, token]);
+
+  const fetchAdminPosts = async () => {
+    setLoadingPosts(true);
+    setErrorPosts(null);
+    try {
+      const response = await fetch("http://localhost:5000/api/posts?limit=1000");
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts");
+      }
+      const data = await response.json();
+      setPostsList(data.posts);
+    } catch (err: any) {
+      setErrorPosts(err.message);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -102,6 +127,39 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     }
   };
 
+  const handleEditPost = (post: any) => {
+    setFormData({
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.category,
+      imageUrl: post.imageUrl,
+      content: post.content,
+    });
+    setEditingPostId(post.id || post._id);
+    setActiveTab("posts");
+  };
+
+  const handleDeletePost = async (id: string) => {
+    if (!token || !window.confirm("Are you sure you want to delete this post?")) return;
+    setDeletingPostId(id);
+    try {
+      const response = await fetch(`http://localhost:5000/api/posts/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete post");
+      }
+      setPostsList(prev => prev.filter(p => (p.id || p._id) !== id));
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setDeletingPostId(null);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -119,8 +177,13 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     setSuccess(false);
 
     try {
-      const response = await fetch("http://localhost:5000/api/posts", {
-        method: "POST",
+      const isEditing = !!editingPostId;
+      const url = isEditing 
+        ? `http://localhost:5000/api/posts/${editingPostId}` 
+        : "http://localhost:5000/api/posts";
+        
+      const response = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -130,7 +193,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create post");
+        throw new Error(errorData.error || `Failed to ${isEditing ? "update" : "create"} post`);
       }
 
       setSuccess(true);
@@ -141,6 +204,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         imageUrl: "",
         content: "",
       });
+      setEditingPostId(null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -167,7 +231,14 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         
         <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", borderBottom: "1px solid var(--border)", paddingBottom: "1rem" }}>
           <button 
-            onClick={() => setActiveTab("posts")}
+            onClick={() => {
+              setActiveTab("posts");
+              if (activeTab !== "posts") {
+                setEditingPostId(null);
+                setFormData({ title: "", excerpt: "", category: "", imageUrl: "", content: "" });
+                setSuccess(false);
+              }
+            }}
             style={{ 
               background: "transparent", 
               border: "none", 
@@ -180,7 +251,23 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               padding: "0.5rem 1rem"
             }}
           >
-            <FileText size={18} /> Create Post
+            <FileText size={18} /> {editingPostId ? "Edit Post" : "Create Post"}
+          </button>
+          <button 
+            onClick={() => setActiveTab("manage_posts")}
+            style={{ 
+              background: "transparent", 
+              border: "none", 
+              color: activeTab === "manage_posts" ? "var(--primary)" : "var(--text-muted)",
+              fontWeight: activeTab === "manage_posts" ? "bold" : "normal",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            <List size={18} /> Manage Posts
           </button>
           <button 
             onClick={() => setActiveTab("users")}
@@ -202,9 +289,22 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
         {activeTab === "posts" && (
           <div className="animate-fade-in">
-            <p className="hero-subtitle" style={{ fontSize: "1rem", marginBottom: "2rem" }}>
-              Create a new blog post.
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+              <p className="hero-subtitle" style={{ fontSize: "1rem", margin: 0 }}>
+                {editingPostId ? "Editing existing blog post." : "Create a new blog post."}
+              </p>
+              {editingPostId && (
+                <button 
+                  onClick={() => {
+                    setEditingPostId(null);
+                    setFormData({ title: "", excerpt: "", category: "", imageUrl: "", content: "" });
+                  }}
+                  style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border)", padding: "0.4rem 0.75rem", borderRadius: "6px", cursor: "pointer", fontSize: "0.9rem" }}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
 
         {error && (
           <div className="form-error" style={{ marginBottom: "1rem", padding: "1rem", backgroundColor: "rgba(239, 68, 68, 0.1)", borderRadius: "8px", border: "1px solid var(--danger)" }}>
@@ -215,7 +315,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         {success && (
           <div style={{ marginBottom: "1rem", padding: "1rem", backgroundColor: "rgba(34, 197, 94, 0.1)", color: "#4ade80", borderRadius: "8px", border: "1px solid #4ade80", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <CheckCircle size={20} />
-            Post created successfully!
+            {editingPostId ? "Post updated successfully!" : "Post created successfully!"}
           </div>
         )}
 
@@ -308,17 +408,104 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             {loading ? (
               <>
                 <Loader2 size={18} className="spin" style={{ marginRight: "0.5rem" }} />
-                Publishing...
+                {editingPostId ? "Updating..." : "Publishing..."}
               </>
             ) : (
               <>
                 <PlusCircle size={18} style={{ marginRight: "0.5rem" }} />
-                Publish Post
+                {editingPostId ? "Update Post" : "Publish Post"}
               </>
             )}
             </button>
           </form>
         </div>
+        )}
+
+        {activeTab === "manage_posts" && (
+          <div className="animate-fade-in">
+            <p className="hero-subtitle" style={{ fontSize: "1rem", marginBottom: "2rem" }}>
+              Manage published posts.
+            </p>
+            
+            {errorPosts ? (
+              <div className="form-error" style={{ marginBottom: "1rem", padding: "1rem", backgroundColor: "rgba(239, 68, 68, 0.1)", borderRadius: "8px", border: "1px solid var(--danger)" }}>
+                {errorPosts}
+              </div>
+            ) : loadingPosts ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "3rem" }}>
+                <Loader2 size={32} className="spin" style={{ color: "var(--primary)" }} />
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border)", color: "var(--text-muted)" }}>
+                      <th style={{ padding: "1rem" }}>Post Title</th>
+                      <th style={{ padding: "1rem" }}>Category</th>
+                      <th style={{ padding: "1rem" }}>Date</th>
+                      <th style={{ padding: "1rem", textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {postsList.map((p) => (
+                      <tr key={p.id || p._id} style={{ borderBottom: "1px solid var(--border)" }}>
+                        <td style={{ padding: "1rem", fontWeight: "bold", maxWidth: "300px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {p.title}
+                        </td>
+                        <td style={{ padding: "1rem" }}>
+                          <span style={{ padding: "0.2rem 0.6rem", borderRadius: "100px", background: "var(--surface-light)", fontSize: "0.85rem", color: "var(--primary)" }}>
+                            {p.category}
+                          </span>
+                        </td>
+                        <td style={{ padding: "1rem", color: "var(--text-muted)" }}>{new Date(p.date || p.createdAt).toLocaleDateString()}</td>
+                        <td style={{ padding: "1rem", textAlign: "right" }}>
+                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                            <button 
+                              onClick={() => handleEditPost(p)}
+                              style={{ 
+                                background: "var(--surface-light)", 
+                                color: "var(--text)", 
+                                border: "none", 
+                                padding: "0.4rem 0.75rem", 
+                                borderRadius: "6px", 
+                                cursor: "pointer", 
+                                display: "inline-flex", 
+                                alignItems: "center", 
+                                gap: "0.5rem" 
+                              }}
+                            >
+                              <Edit size={16} /> Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeletePost(p.id || p._id)}
+                              disabled={deletingPostId === (p.id || p._id)}
+                              style={{ 
+                                background: "transparent", 
+                                color: "var(--danger)", 
+                                border: "1px solid var(--danger)", 
+                                padding: "0.4rem 0.75rem", 
+                                borderRadius: "6px", 
+                                cursor: "pointer", 
+                                display: "inline-flex", 
+                                alignItems: "center", 
+                                gap: "0.5rem" 
+                              }}
+                            >
+                              {deletingPostId === (p.id || p._id) ? <Loader2 size={16} className="spin" /> : <Trash2 size={16} />}
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {postsList.length === 0 && (
+                  <p style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>No posts found.</p>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         {activeTab === "users" && (

@@ -162,6 +162,51 @@ app.post("/api/posts", verifyAuth, async (req, res) => {
   }
 });
 
+// API: Update an existing post
+app.put("/api/posts/:id", verifyAuth, verifyAdmin, async (req, res) => {
+  try {
+    const { title, excerpt, content, imageUrl, category } = req.body;
+    
+    if (!title || !excerpt || !content || !imageUrl || !category) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const words = content.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const readTime = Math.ceil(words / 200) + " min read";
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { title, excerpt, content, imageUrl, category, readTime },
+      { new: true }
+    );
+
+    if (!updatedPost) return res.status(404).json({ error: "Post not found" });
+
+    if (io) io.emit("post_updated", { id: updatedPost._id, likes: updatedPost.likes, views: updatedPost.views });
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.error("Error updating post:", error);
+    res.status(500).json({ error: "Failed to update post" });
+  }
+});
+
+// API: Delete a post
+app.delete("/api/posts/:id", verifyAuth, verifyAdmin, async (req, res) => {
+  try {
+    const deletedPost = await Post.findByIdAndDelete(req.params.id);
+    if (!deletedPost) return res.status(404).json({ error: "Post not found" });
+    
+    // If you have a 'post_deleted' event listener on frontend, emit it here
+    if (io) io.emit("post_deleted", { id: req.params.id });
+    
+    res.json({ message: "Post deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res.status(500).json({ error: "Failed to delete post" });
+  }
+});
+
 // API: Get paginated posts
 app.get("/api/posts", async (req, res) => {
   try {
