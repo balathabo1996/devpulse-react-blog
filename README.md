@@ -21,33 +21,41 @@ The application leverages **React** on the frontend for lightning-fast navigatio
 ## 🚀 Key Features
 
 ### 🎨 Premium User Interface
-- **Dynamic Glassmorphism Design:** Beautiful translucent panels, smooth interactive hover states, and meticulously curated typography.
+- **Dynamic Glassmorphism Design:** Beautiful translucent panels, smooth interactive hover states, and meticulously curated typography built entirely with pure CSS.
 - **Fluid Animations:** Seamless micro-interactions during page transitions, dropdown menus, and authentication forms.
-- **Responsive Layout:** Perfectly scales from wide-screen desktop monitors to mobile devices without compromising aesthetics.
+- **Syntax Highlighting:** Integrated **Prism.js** automatically detects code blocks within articles and beautifully highlights them in a sleek dark IDE theme.
+- **SEO Optimized:** Dynamically generated Open Graph (OG) and Twitter Card meta tags via `react-helmet-async` ensure beautiful social media preview cards when articles are shared.
 
-### 🔐 Advanced Authentication
+### ⚡ Performance Architecture
+- **Infinite Scroll & Pagination:** Automatically fetches older posts as the user scrolls, drastically reducing initial payload sizes.
+- **Skeleton Loaders:** Elegant, pulsing placeholder UI renders instantly while data is seamlessly fetched in the background.
+
+### 🔐 Advanced Authentication & User Community
 - **Secure Architecture:** Powered by Firebase Authentication to deliver enterprise-grade security.
 - **Multiple Login Methods:** Support for frictionless 1-click **Google OAuth** as well as native **Email & Password** registration.
-- **Dynamic Avatars:** Automatically generates a beautiful, color-graded initial avatar if a user doesn't upload a profile picture.
+- **User Profile Dashboard:** A dedicated space where readers can view their comment history, easily jump to their "Liked" posts, and seamlessly manage their Display Name.
 
-### ⚡ Real-Time Ecosystem
-- **Live Comments:** Powered by Socket.io, users can see new comments appear in real-time as they are posted without ever refreshing the page.
-- **Rich Text Authoring:** An integrated Markdown/Rich-Text editor (via ReactQuill) allows authors to perfectly format their posts with code blocks, lists, and images.
+### 🌐 Real-Time Ecosystem
+- **Live Active Readers:** An elegant, pulsing green badge powered by Socket.io "Rooms" instantly displays exactly how many people are currently reading the same article.
+- **Live Comments:** Users can see new comments appear in real-time as they are posted without ever refreshing the page.
 - **Like System:** A dynamic, instant-feedback post liking mechanism to engage readers.
+- **Rich Text Authoring:** An integrated Markdown/Rich-Text editor (via React Quill) allows authors to perfectly format their posts with code blocks, lists, and images.
 
 ### 🛡️ Admin Management System
 - **Secure Admin Portal:** A dedicated control center guarded by the Firebase Admin SDK.
 - **Full Control:** The admin can seamlessly draft, publish, and format new articles.
-- **User Moderation:** A dedicated User Management dashboard allows the admin to view all registered users and permanently delete unverified or malicious accounts.
+- **User Moderation:** A dedicated User Management dashboard allows the admin to view all registered users and permanently delete unverified or malicious accounts with built-in pagination.
 
 ---
 
 ## 🏗️ Technical Stack
 
 **Frontend Architecture:**
-* **Framework:** React 18 (Bootstrapped with Vite)
+* **Framework:** React 19 (Bootstrapped with Vite)
 * **Routing:** React Router DOM v6
-* **Styling:** Highly modular CSS3 with CSS Variables for extreme customization
+* **Styling:** Highly modular Vanilla CSS3 with CSS Variables for extreme customization
+* **SEO:** React Helmet Async
+* **Code Formatting:** Prism.js
 * **Icons:** Lucide React
 * **Editor:** React Quill
 
@@ -127,6 +135,7 @@ The application will now be running on `http://localhost:5173`.
 DevPulse strictly adheres to modern security practices:
 - **No stored passwords:** All credentials and passwords are strictly managed and salted by Google's Firebase infrastructure.
 - **JWT Verification:** All protected backend routes enforce stringent JWT verification.
+- **XSS Protection:** User-generated HTML is systematically scrubbed with `DOMPurify` before rendering.
 - **Protected Environment Variables:** Critical secrets are strictly kept out of version control via comprehensive `.gitignore` rules.
 
 ---

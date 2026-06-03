@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema({
   readTime: { type: String, required: true },
   imageUrl: { type: String, required: true },
   category: { type: String, required: true },
+  status: { type: String, enum: ["draft", "published"], default: "published" },
   likes: [{ type: String }],
   views: { type: Number, default: 0 }
 }, {

@@ -5,9 +5,9 @@ import { useAuth } from "../context/AuthContext";
 
 // Props for the Navbar component.
 interface NavbarProps {
-  currentView: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings";
+  currentView: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile";
   onNavigate: (
-    view: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings",
+    view: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile",
     reset?: boolean,
   ) => void;
 }
@@ -33,7 +33,7 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
 
   const handleNavClick = (
     e: React.MouseEvent,
-    view: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings",
+    view: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile",
   ) => {
     e.preventDefault();
     onNavigate(view, true); // Always reset filters when clicking nav items
@@ -47,8 +47,12 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
           onClick={(e) => handleNavClick(e, "home")}
           className="navbar-logo"
         >
-          <Terminal size={28} color="var(--primary)" />
-          <span className="text-gradient">DevPulse</span>
+          <div className="logo-icon-wrapper">
+            <Terminal size={22} className="logo-icon" />
+          </div>
+          <span className="logo-text">
+            Dev<span className="logo-text-highlight">Pulse</span>
+          </span>
         </a>
         <ul className="navbar-links">
           {NAV_ITEMS.map((item) => {
@@ -107,8 +111,8 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
                     </button>
                   )}
                   
-                  <button onClick={() => { onNavigate("settings"); setIsDropdownOpen(false); }} className="dropdown-item">
-                    <Settings size={16} /> Settings
+                  <button onClick={() => { onNavigate("profile"); setIsDropdownOpen(false); }} className="dropdown-item">
+                    <User size={16} /> My Profile
                   </button>
                   
                   <div className="dropdown-divider"></div>

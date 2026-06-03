@@ -38,12 +38,12 @@ export function useComments(postId: number | string | null) {
     }
   }, [postId, socket]);
 
-  const addComment = async (text: string) => {
+  const addComment = async (text: string, parentId?: string | null) => {
     if (!postId || !token) return;
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/comments`,
-        { postId, text },
+        { postId, text, parentId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (error) {

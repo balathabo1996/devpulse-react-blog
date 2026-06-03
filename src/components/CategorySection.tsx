@@ -1,6 +1,7 @@
 import { Loader2, ArrowRight } from "lucide-react";
 import { usePosts } from "../hooks/usePosts";
 import { PostList } from "./PostList";
+import { PostCardSkeleton } from "./SkeletonLoader";
 import type { Post } from "../types";
 
 interface CategorySectionProps {
@@ -14,8 +15,16 @@ export function CategorySection({ category, onSelectPost, onViewCategory }: Cate
 
   if (loading && posts.length === 0) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-        <Loader2 className="animate-spin" />
+      <div className="section-header" style={{ marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+          <h2 className="section-title" style={{ marginBottom: 0 }}>
+            Latest in <span className="text-gradient">{category}</span>
+          </h2>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </div>
       </div>
     );
   }

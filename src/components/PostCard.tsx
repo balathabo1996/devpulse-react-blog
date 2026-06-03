@@ -15,7 +15,7 @@ export function PostCard({ post, onClick }: PostCardProps) {
       className="post-card post-card-inner animate-fade-in"
       onClick={() => onClick(post)}
       style={{
-        backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.2)), url(${post.imageUrl})`,
+        backgroundImage: `linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 40%, rgba(15, 23, 42, 0.85) 100%), url(${post.imageUrl})`,
       }}
     >
       <div className="card-content" style={{ zIndex: 2, minWidth: 0, width: "100%" }}>

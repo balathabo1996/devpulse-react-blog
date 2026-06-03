@@ -4,12 +4,14 @@
  */
 export interface Post {
   id: string | number;
+  _id?: string;
   title: string;
   date: string;
   excerpt: string;
   content: string;
   category: string;
   imageUrl: string;
+  status?: "draft" | "published";
   likes?: string[];
   views?: number;
 }
@@ -18,11 +20,12 @@ export interface Post {
  * Represents a User Comment.
  */
 export interface Comment {
-  id: string | number;
-  postId: string | number;
+  id: string;
+  postId: string;
+  parentId?: string | null;
   user: string;
   userEmail: string;
   userAvatar?: string;
-  date: string;
   text: string;
+  date: string;
 }

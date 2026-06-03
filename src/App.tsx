@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowLeft, Loader2, Sparkles, Briefcase, Cloud, Wrench, Shield, BookOpen, LayoutGrid } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Navbar } from "./components/Navbar";
@@ -12,21 +12,25 @@ import { About } from "./components/About";
 import { CategorySection } from "./components/CategorySection";
 import { Login } from "./components/Login";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { PostCardSkeleton } from "./components/SkeletonLoader";
 import { Settings } from "./components/Settings";
+import { UserProfile } from "./components/UserProfile";
 import { Footer } from "./components/Footer";
 import { usePosts, useCategories } from "./hooks/usePosts";
 import { useComments } from "./hooks/useComments";
+import { useAuth } from "./context/AuthContext";
 import type { Post } from "./types";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Main Application Component: Manages state, routing, and layout.
 function App() {
   const [view, setView] = useState<
-    "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings"
+    "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile"
   >(() => {
     const saved = localStorage.getItem("app_view");
-    const validViews = ["home", "posts", "about", "contact", "login", "admin", "settings"];
+    const validViews = ["home", "posts", "about", "contact", "login", "admin", "settings", "profile"];
     return validViews.includes(saved || "")
-      ? (saved as "home" | "posts" | "about" | "contact" | "login" | "admin")
+      ? (saved as "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile")
       : "home";
   });
 
@@ -57,17 +61,17 @@ function App() {
     }
   }, [selectedCategory]);
 
-  const handleAddComment = async (data: { user: string; text: string }) => {
+  const handleAddComment = async (data: { user: string; text: string; parentId?: string | null }) => {
     if (!selectedPost) return;
     try {
-      await addComment(data.text);
+      await addComment(data.text, data.parentId);
     } catch (err) {
       alert("Please login to comment!");
     }
   };
 
   const handleNavigate = (
-    viewName: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings",
+    viewName: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile",
     reset?: boolean,
   ) => {
     setView(viewName);
@@ -84,6 +88,7 @@ function App() {
       case "contact":
       case "login":
       case "admin":
+      case "profile":
         setSelectedPost(null);
         if (viewName !== "posts") {
           setSelectedCategory(null);
@@ -98,33 +103,43 @@ function App() {
     if (view === "contact") return "Contact Us - DevPulse";
     if (view === "login") return "Login - DevPulse";
     if (view === "admin") return "Admin Dashboard - DevPulse";
+    if (view === "profile") return "Profile - DevPulse";
     if (selectedCategory) return `${selectedCategory} Articles - DevPulse`;
     if (searchQuery) return `Search: ${searchQuery} - DevPulse`;
     return "DevPulse - The Modern Developer Blog";
   };
 
-  const LoadMoreButton = () => {
+  const observerTarget = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, loading, loadMore]);
+
+  const InfiniteScrollLoader = () => {
     if (!hasMore) return null;
     return (
       <div
-        style={{ textAlign: "center", marginTop: "2rem", marginBottom: "2rem" }}
+        ref={observerTarget}
+        style={{ textAlign: "center", marginTop: "2rem", marginBottom: "2rem", height: "40px", display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        <button
-          onClick={loadMore}
-          className="btn btn-ghost"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "1rem",
-            border: "1px solid var(--border-color)",
-          }}
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" style={{ display: "inline" }} />
-          ) : (
-            "Load More Posts"
-          )}
-        </button>
+        {loading && <Loader2 className="animate-spin" style={{ color: "var(--primary)" }} />}
       </div>
     );
   };
@@ -163,10 +178,20 @@ function App() {
         }}
       />
       <main className="container main-content">
-        {view === "admin" ? (
-          <AdminDashboard onNavigate={handleNavigate} />
-        ) : view === "settings" ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view + (selectedPost ? "-post-" + (selectedPost.id || selectedPost._id) : "") + (selectedCategory ? "-cat-" + selectedCategory : "")}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {view === "admin" ? (
+              <AdminDashboard onNavigate={handleNavigate} />
+            ) : view === "settings" ? (
           <Settings />
+        ) : view === "profile" ? (
+          <UserProfile />
         ) : view === "login" ? (
           <Login onNavigate={handleNavigate} />
         ) : view === "contact" ? (
@@ -237,6 +262,13 @@ function App() {
                       window.scrollTo(0, 0);
                     }}
                   />
+                  {loading && posts.length === 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                    </div>
+                  )}
                   {posts.length === 0 && !loading && (
                     <p
                       style={{
@@ -248,7 +280,7 @@ function App() {
                       No posts found.
                     </p>
                   )}
-                  <LoadMoreButton />
+                  <InfiniteScrollLoader />
                 </div>
               </div>
             </div>
@@ -300,6 +332,13 @@ function App() {
                       window.scrollTo(0, 0);
                     }}
                   />
+                  {loading && posts.length === 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                      <PostCardSkeleton />
+                    </div>
+                  )}
                   {posts.length === 0 && !loading && (
                     <p
                       style={{
@@ -311,7 +350,7 @@ function App() {
                       No posts found.
                     </p>
                   )}
-                  <LoadMoreButton />
+                  <InfiniteScrollLoader />
                 </div>
               )}
             </div>
@@ -337,8 +376,10 @@ function App() {
             </aside>
           </div>
         )}
-      </main>
-      <Footer onNavigate={handleNavigate} />
+        </motion.div>
+      </AnimatePresence>
+    </main>
+    <Footer onNavigate={handleNavigate} />
     </div>
   );
 }

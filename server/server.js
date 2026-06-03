@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { Post } from "./models/Post.js";
 import { Comment } from "./models/Comment.js";
 
@@ -16,12 +18,43 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*", // allow frontend
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(cors());
 app.use(express.json());
+
+// Security Headers Middleware
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // Allow cross-origin requests from frontend
+  }),
+);
+
+// Global Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  message: {
+    error: "Too many requests from this IP, please try again after 15 minutes",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/", globalLimiter);
+
+// Strict Rate Limiting for Comments
+const commentsLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // Limit each IP to 5 comments per minute
+  message: {
+    error:
+      "Too many comments created from this IP, please try again after a minute",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Initialize Firebase Admin (Only if config is provided)
 if (process.env.FIREBASE_PROJECT_ID) {
@@ -31,8 +64,8 @@ if (process.env.FIREBASE_PROJECT_ID) {
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         // Replace literal \n with actual newlines in private key
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-      })
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
     });
     console.log("Firebase Admin initialized");
   } catch (error) {
@@ -41,9 +74,10 @@ if (process.env.FIREBASE_PROJECT_ID) {
 }
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
-  .catch(err => console.error("MongoDB connection error:", err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Auth Middleware (Verify Firebase Token)
 const verifyAuth = async (req, res, next) => {
@@ -54,8 +88,12 @@ const verifyAuth = async (req, res, next) => {
       const decodedToken = await admin.auth().verifyIdToken(token);
       req.user = decodedToken;
     } else {
-      console.warn("Firebase Admin not configured, decoding JWT without verification");
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+      console.warn(
+        "Firebase Admin not configured, decoding JWT without verification",
+      );
+      const payload = JSON.parse(
+        Buffer.from(token.split(".")[1], "base64").toString(),
+      );
       req.user = payload;
     }
     next();
@@ -75,19 +113,26 @@ const verifyAdmin = async (req, res, next) => {
 // API: Get all users
 app.get("/api/users", verifyAuth, verifyAdmin, async (req, res) => {
   if (admin.apps.length === 0) {
-    return res.status(500).json({ error: "Firebase Admin SDK not initialized. Please configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in server/.env" });
+    return res
+      .status(500)
+      .json({
+        error:
+          "Firebase Admin SDK not initialized. Please configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in server/.env",
+      });
   }
   try {
-    const listUsersResult = await admin.auth().listUsers(1000);
-    const users = listUsersResult.users.map(u => ({
+    const limit = parseInt(req.query.limit) || 10;
+    const pageToken = req.query.pageToken || undefined;
+    const listUsersResult = await admin.auth().listUsers(limit, pageToken);
+    const users = listUsersResult.users.map((u) => ({
       uid: u.uid,
       email: u.email,
       displayName: u.displayName,
       photoURL: u.photoURL,
       creationTime: u.metadata.creationTime,
-      lastSignInTime: u.metadata.lastSignInTime
+      lastSignInTime: u.metadata.lastSignInTime,
     }));
-    res.json(users);
+    res.json({ users, nextPageToken: listUsersResult.pageToken });
   } catch (error) {
     console.error("Error listing users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
@@ -100,17 +145,53 @@ app.delete("/api/users/:uid", verifyAuth, verifyAdmin, async (req, res) => {
     return res.status(500).json({ error: "Firebase Admin SDK not initialized." });
   }
   try {
-    const uid = req.params.uid;
+    const { uid } = req.params;
     const userToDelete = await admin.auth().getUser(uid);
     if (userToDelete.email === process.env.ADMIN_EMAIL) {
       return res.status(403).json({ error: "Cannot delete the admin account" });
     }
-    
     await admin.auth().deleteUser(uid);
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+// API: Get user's own comments
+app.get("/api/users/profile/comments", verifyAuth, async (req, res) => {
+  try {
+    const comments = await Comment.find({ userEmail: req.user.email }).sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user comments" });
+  }
+});
+
+// API: Get user's liked posts
+app.get("/api/users/profile/likes", verifyAuth, async (req, res) => {
+  try {
+    const posts = await Post.find({ likes: req.user.email }).sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch liked posts" });
+  }
+});
+
+// API: Update user's profile
+app.put("/api/users/profile", verifyAuth, async (req, res) => {
+  if (admin.apps.length === 0) {
+    return res.status(500).json({ error: "Firebase Admin SDK not initialized." });
+  }
+  try {
+    const { displayName } = req.body;
+    const userRecord = await admin.auth().updateUser(req.user.uid, {
+      displayName: displayName,
+    });
+    res.json({ message: "Profile updated successfully", user: userRecord });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
   }
 });
 
@@ -131,27 +212,28 @@ app.post("/api/posts", verifyAuth, async (req, res) => {
       return res.status(403).json({ error: "Access denied. Admin only." });
     }
 
-    const { title, excerpt, content, imageUrl, category } = req.body;
-    
+    const { title, excerpt, content, imageUrl, category, status } = req.body;
+
     if (!title || !excerpt || !content || !imageUrl || !category) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const words = content.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const words = content.replace(/<[^>]*>?/gm, "").split(/\s+/).length;
     const readTime = Math.ceil(words / 200) + " min read";
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString().split("T")[0];
 
     const newPost = new Post({
       title,
       excerpt,
       content,
-      author: req.user.name || req.user.email.split('@')[0],
+      author: req.user.name || req.user.email.split("@")[0],
       date,
       readTime,
       imageUrl,
       category,
+      status: status || "published",
       likes: [],
-      views: 0
+      views: 0,
     });
 
     await newPost.save();
@@ -165,24 +247,29 @@ app.post("/api/posts", verifyAuth, async (req, res) => {
 // API: Update an existing post
 app.put("/api/posts/:id", verifyAuth, verifyAdmin, async (req, res) => {
   try {
-    const { title, excerpt, content, imageUrl, category } = req.body;
-    
+    const { title, excerpt, content, imageUrl, category, status } = req.body;
+
     if (!title || !excerpt || !content || !imageUrl || !category) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const words = content.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const words = content.replace(/<[^>]*>?/gm, "").split(/\s+/).length;
     const readTime = Math.ceil(words / 200) + " min read";
 
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.id,
-      { title, excerpt, content, imageUrl, category, readTime },
-      { new: true }
+      { title, excerpt, content, imageUrl, category, status: status || "published", readTime },
+      { new: true },
     );
 
     if (!updatedPost) return res.status(404).json({ error: "Post not found" });
 
-    if (io) io.emit("post_updated", { id: updatedPost._id, likes: updatedPost.likes, views: updatedPost.views });
+    if (io)
+      io.emit("post_updated", {
+        id: updatedPost._id,
+        likes: updatedPost.likes,
+        views: updatedPost.views,
+      });
 
     res.json(updatedPost);
   } catch (error) {
@@ -196,10 +283,10 @@ app.delete("/api/posts/:id", verifyAuth, verifyAdmin, async (req, res) => {
   try {
     const deletedPost = await Post.findByIdAndDelete(req.params.id);
     if (!deletedPost) return res.status(404).json({ error: "Post not found" });
-    
+
     // If you have a 'post_deleted' event listener on frontend, emit it here
     if (io) io.emit("post_deleted", { id: req.params.id });
-    
+
     res.json({ message: "Post deleted successfully" });
   } catch (error) {
     console.error("Error deleting post:", error);
@@ -214,16 +301,16 @@ app.get("/api/posts", async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const { category, search } = req.query;
 
-    let query = {};
-    
+    let query = { status: { $ne: "draft" } };
+
     if (category) {
       query.category = category;
     }
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
-        { excerpt: { $regex: search, $options: "i" } }
+        { excerpt: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -237,7 +324,7 @@ app.get("/api/posts", async (req, res) => {
       posts,
       total,
       page,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error(error);
@@ -245,10 +332,73 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
+// API: Get ALL posts for Admin Dashboard (includes drafts)
+app.get("/api/admin/posts", verifyAuth, verifyAdmin, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    let query = {};
+    const total = await Post.countDocuments(query);
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({
+      posts,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch admin posts" });
+  }
+});
+
+// API: Get analytics for Admin Dashboard
+app.get("/api/admin/analytics", verifyAuth, verifyAdmin, async (req, res) => {
+  try {
+    const totalComments = await Comment.countDocuments();
+    const posts = await Post.find({});
+    
+    let totalViews = 0;
+    let totalLikes = 0;
+    const categoryMap = {};
+
+    posts.forEach((post) => {
+      totalViews += post.views || 0;
+      totalLikes += (post.likes && post.likes.length) || 0;
+      
+      const cat = post.category || "Uncategorized";
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = { name: cat, views: 0, likes: 0 };
+      }
+      categoryMap[cat].views += post.views || 0;
+      categoryMap[cat].likes += (post.likes && post.likes.length) || 0;
+    });
+
+    const categoryPerformance = Object.values(categoryMap);
+
+    res.json({
+      totalViews,
+      totalLikes,
+      totalComments,
+      categoryPerformance
+    });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
+  }
+});
+
 // API: Get comments for a post
 app.get("/api/comments/:postId", async (req, res) => {
   try {
-    const comments = await Comment.find({ postId: req.params.postId }).sort({ createdAt: 1 });
+    const comments = await Comment.find({ postId: req.params.postId }).sort({
+      createdAt: 1,
+    });
     res.json(comments);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comments" });
@@ -256,25 +406,26 @@ app.get("/api/comments/:postId", async (req, res) => {
 });
 
 // API: Add a comment (Requires Auth)
-app.post("/api/comments", verifyAuth, async (req, res) => {
+app.post("/api/comments", commentsLimiter, verifyAuth, async (req, res) => {
   try {
-    const { postId, text } = req.body;
-    
+    const { postId, text, parentId } = req.body;
+
     // Check if post exists
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ error: "Post not found" });
 
     const newComment = new Comment({
       postId,
-      user: req.user.name || req.user.email.split('@')[0], // fallback name
+      parentId: parentId || null,
+      user: req.user.name || req.user.email.split("@")[0], // fallback name
       userEmail: req.user.email,
       userAvatar: req.user.picture || null,
       text,
-      date: new Date().toLocaleDateString()
+      date: new Date().toLocaleDateString(),
     });
 
     const savedComment = await newComment.save();
-    
+
     // Broadcast via Socket.io
     io.emit(`new_comment_${postId}`, savedComment);
 
@@ -301,13 +452,37 @@ app.post("/api/posts/:id/like", verifyAuth, async (req, res) => {
     }
 
     const updatedPost = await post.save();
-    
+
     // Broadcast via Socket.io
-    io.emit("post_updated", { id: updatedPost.id, likes: updatedPost.likes, views: updatedPost.views });
-    
+    io.emit("post_updated", {
+      id: updatedPost.id,
+      likes: updatedPost.likes,
+      views: updatedPost.views,
+    });
+
     res.json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: "Failed to like post" });
+  }
+});
+
+// API: Get related posts
+app.get("/api/posts/:id/related", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const relatedPosts = await Post.find({
+      category: post.category,
+      _id: { $ne: post._id },
+      status: { $ne: "draft" }
+    })
+      .sort({ views: -1 })
+      .limit(3);
+
+    res.json(relatedPosts);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch related posts" });
   }
 });
 
@@ -317,13 +492,17 @@ app.post("/api/posts/:id/view", async (req, res) => {
     const post = await Post.findByIdAndUpdate(
       req.params.id,
       { $inc: { views: 1 } },
-      { new: true }
+      { new: true },
     );
     if (!post) return res.status(404).json({ error: "Post not found" });
 
     // Broadcast via Socket.io
-    io.emit("post_updated", { id: post.id, likes: post.likes, views: post.views });
-    
+    io.emit("post_updated", {
+      id: post.id,
+      likes: post.likes,
+      views: post.views,
+    });
+
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Failed to update views" });
@@ -407,13 +586,15 @@ app.post("/api/contact", async (req, res) => {
     await transporter.sendMail({
       from: `"${name}" <${process.env.SMTP_USER}>`,
       replyTo: email,
-      to: "balathabo96@gmail.com", 
+      to: "balathabo96@gmail.com",
       subject: subject || "New Contact Form Submission",
       text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
-      html: htmlEmail
+      html: htmlEmail,
     });
 
-    res.status(200).json({ success: true, message: "Email sent successfully!" });
+    res
+      .status(200)
+      .json({ success: true, message: "Email sent successfully!" });
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).json({ error: "Failed to send email" });
@@ -423,7 +604,28 @@ app.post("/api/contact", async (req, res) => {
 // Socket.io connection handling
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
-  
+
+  socket.on("join_post", (postId) => {
+    socket.join(postId);
+    const roomSize = io.sockets.adapter.rooms.get(postId)?.size || 0;
+    io.to(postId).emit("active_readers", roomSize);
+  });
+
+  socket.on("leave_post", (postId) => {
+    socket.leave(postId);
+    const roomSize = io.sockets.adapter.rooms.get(postId)?.size || 0;
+    io.to(postId).emit("active_readers", roomSize);
+  });
+
+  socket.on("disconnecting", () => {
+    for (const room of socket.rooms) {
+      if (room !== socket.id) {
+        const currentSize = io.sockets.adapter.rooms.get(room)?.size || 1;
+        io.to(room).emit("active_readers", currentSize - 1);
+      }
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });

@@ -10,15 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@fontsource-variable/ibm-plex-sans": "^5.2.8",
+    "@types/dompurify": "^3.0.5",
+    "@types/prismjs": "^1.26.6",
     "axios": "^1.16.1",
+    "dompurify": "^3.4.8",
     "firebase": "^12.14.0",
+    "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
+    "prismjs": "^1.30.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.77.0",
     "react-quill-new": "^3.8.3",
+    "recharts": "^3.8.1",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
@@ -33,7 +39,6 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.60.1",
     "vite": "^8.0.16",
