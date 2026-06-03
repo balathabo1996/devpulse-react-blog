@@ -164,10 +164,10 @@ function App() {
           }
         />
       </Helmet>
-      <Navbar currentView={view} onNavigate={handleNavigate} />
-      <Hero
+      <Navbar 
+        currentView={view} 
+        onNavigate={handleNavigate} 
         searchQuery={searchQuery}
-        showSearch={view === "home" || view === "posts"}
         onSearch={(q) => {
           setSearchQuery(q);
           if (q && view !== "posts" && view !== "home") {
@@ -176,7 +176,17 @@ function App() {
             setSelectedCategory(null);
           }
         }}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategorySelect={(cat) => {
+          setSelectedCategory(cat);
+          if (view !== "posts" && view !== "home") {
+            setView("home");
+            setSelectedPost(null);
+          }
+        }}
       />
+      <Hero />
       <main className="container main-content">
         <AnimatePresence mode="wait">
           <motion.div

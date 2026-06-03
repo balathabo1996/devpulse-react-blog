@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "^5.2.8",
+    "@fontsource-variable/outfit": "^5.2.8",
     "@types/dompurify": "^3.0.5",
     "@types/prismjs": "^1.26.6",
     "axios": "^1.16.1",

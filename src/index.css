@@ -1,4 +1,5 @@
 @import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource-variable/outfit";
 
 /* CSS Variables for Neon Theme (Pink/Purple/Cyan) */
 :root {
@@ -28,6 +29,7 @@
     0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   --glow: 0 0 20px rgba(236, 72, 153, 0.3);
   --font-sans: "IBM Plex Sans Variable", sans-serif;
+  --font-heading: "Outfit Variable", sans-serif;
 }
 
 @theme {
@@ -98,6 +100,17 @@ a {
 
 a:hover {
   color: var(--primary);
+}
+
+h1, h2, h3, h4, h5, h6, .ghost-title, .logo-text {
+  font-family: var(--font-heading);
+}
+
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 button {
@@ -2657,4 +2670,342 @@ img {
 .dropdown-logout:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #f87171;
+}
+
+
+/* --- Navbar Search & Filter --- */
+.nav-search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-search-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0 0.55rem;
+  height: 36px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 36px; /* Collapsed width matches category btn */
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.nav-search-wrapper:hover,
+.nav-search-wrapper.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
+  width: 220px; /* Expanded width */
+  cursor: text;
+  padding: 0 0.8rem;
+}
+
+.nav-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.nav-search-wrapper.active .nav-search-icon {
+  color: var(--primary);
+}
+
+.nav-search-input {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  width: 100%;
+  padding-left: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav-search-wrapper.active .nav-search-input {
+  opacity: 1;
+}
+
+.nav-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Category Filter Button & Dropdown */
+.nav-category-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-category-btn:hover,
+.nav-category-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.nav-category-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 180px;
+  background-color: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-category-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-category-item:hover,
+.nav-category-item.active {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primary);
+}
+
+
+/* --- Floating Labels --- */
+.floating-label {
+  position: absolute;
+  top: 50%;
+  left: 2.75rem;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  transform-origin: left top;
+}
+
+.floating-input:focus ~ .floating-label,
+.floating-input:not(:placeholder-shown) ~ .floating-label {
+  top: 0;
+  left: 0.8rem;
+  transform: translateY(-50%) scale(0.85);
+  background-color: var(--surface); /* Fix the strike-through line */
+  padding: 0 0.4rem;
+  color: var(--primary);
+  border-radius: 4px;
+}
+
+
+/* --- Ghost Panel Sliding Auth --- */
+.ghost-auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.ghost-auth-container {
+  background-color: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+  width: 900px; /* Wider for dual panels */
+  max-width: 100%;
+  min-height: 550px;
+}
+
+.ghost-form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: all 0.6s ease-in-out;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 50%; /* Half width */
+}
+
+.ghost-sign-in-container {
+  left: 0;
+  z-index: 2;
+  opacity: 1;
+}
+
+.ghost-sign-up-container {
+  left: 0;
+  z-index: 1;
+  opacity: 0;
+}
+
+/* When Right Panel is Active (Registering) */
+.ghost-auth-container.right-panel-active .ghost-sign-in-container {
+  transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+}
+
+.ghost-auth-container.right-panel-active .ghost-sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: show 0.6s;
+}
+
+@keyframes show {
+  0%, 49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  50%, 100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.ghost-overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+}
+
+.ghost-auth-container.right-panel-active .ghost-overlay-container {
+  transform: translateX(-100%);
+}
+
+.ghost-overlay {
+  background: var(--primary-gradient);
+  background-size: 200% 200%;
+  color: #fff;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.ghost-auth-container.right-panel-active .ghost-overlay {
+  transform: translateX(50%);
+}
+
+.ghost-overlay-panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 40px;
+  text-align: center;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.ghost-overlay-left {
+  transform: translateX(-20%);
+}
+
+.ghost-auth-container.right-panel-active .ghost-overlay-left {
+  transform: translateX(0);
+}
+
+.ghost-overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.ghost-auth-container.right-panel-active .ghost-overlay-right {
+  transform: translateX(20%);
+}
+
+.ghost-btn-ghost {
+  background-color: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 0.75rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.ghost-btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ghost-title {
+  font-weight: 700;
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+}
+
+.ghost-subtitle {
+  font-size: 0.95rem;
+  font-weight: 300;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* Ensure mobile layout handles it differently if needed */
+@media (max-width: 768px) {
+  .ghost-auth-container {
+    width: 100%;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .ghost-form-container {
+    width: 100%;
+    height: 50%;
+    padding: 1.5rem;
+  }
+  
+  .ghost-overlay-container {
+    display: none; /* Hide sliding overlay on mobile, we'd need a different fallback, but for now just hide it or redesign for mobile */
+  }
+  
+  /* Quick mobile fallback */
+  .ghost-sign-in-container {
+    top: 0;
+  }
+  
+  .ghost-sign-up-container {
+    top: 50%;
+    opacity: 1;
+    z-index: 1;
+  }
 }

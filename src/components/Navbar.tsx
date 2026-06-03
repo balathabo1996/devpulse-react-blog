@@ -1,5 +1,5 @@
 // Navbar: Top navigation bar with branding and links
-import { Terminal, LogIn, LogOut, Settings, User, ChevronDown } from "lucide-react";
+import { Terminal, LogIn, LogOut, Settings, User, ChevronDown, Search, Filter } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,21 +10,41 @@ interface NavbarProps {
     view: "home" | "posts" | "about" | "contact" | "login" | "admin" | "settings" | "profile",
     reset?: boolean,
   ) => void;
+  searchQuery?: string;
+  onSearch?: (query: string) => void;
+  categories?: string[];
+  selectedCategory?: string | null;
+  onCategorySelect?: (category: string | null) => void;
 }
 
 const NAV_ITEMS = ["Home", "Posts", "About", "Contact"] as const;
 
 // Sticky Navigation Bar with glassmorphism effects and internal routing.
-export function Navbar({ currentView, onNavigate }: NavbarProps) {
+export function Navbar({ 
+  currentView, 
+  onNavigate,
+  searchQuery,
+  onSearch,
+  categories,
+  selectedCategory,
+  onCategorySelect
+}: NavbarProps) {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLLIElement>(null);
 
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -71,6 +91,53 @@ export function Navbar({ currentView, onNavigate }: NavbarProps) {
               </li>
             );
           })}
+
+          <li className="nav-search-container" style={{ position: 'relative', marginLeft: '1rem', display: 'flex', alignItems: 'center' }}>
+            <div className={`nav-search-wrapper ${isSearchActive || searchQuery ? 'active' : ''}`}>
+              <Search size={16} className="nav-search-icon" />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                className="nav-search-input"
+                value={searchQuery || ""}
+                onChange={(e) => onSearch?.(e.target.value)}
+                onFocus={() => setIsSearchActive(true)}
+                onBlur={() => setIsSearchActive(false)}
+              />
+            </div>
+            
+            {categories && categories.length > 0 && (
+              <div ref={categoryRef} style={{ position: 'relative', marginLeft: '0.5rem' }}>
+                <button 
+                  className={`nav-category-btn ${selectedCategory ? 'active' : ''}`}
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  title="Filter by Category"
+                >
+                  <Filter size={16} />
+                </button>
+                
+                {isCategoryOpen && (
+                  <div className="nav-category-menu animate-fade-in glass">
+                    <button 
+                      className={`nav-category-item ${!selectedCategory ? 'active' : ''}`}
+                      onClick={() => { onCategorySelect?.(null); setIsCategoryOpen(false); }}
+                    >
+                      All Categories
+                    </button>
+                    {categories.map(cat => (
+                      <button 
+                        key={cat}
+                        className={`nav-category-item ${selectedCategory === cat ? 'active' : ''}`}
+                        onClick={() => { onCategorySelect?.(cat); setIsCategoryOpen(false); }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </li>
 
           {user ? (
             <li className="nav-user-info nav-auth-item" ref={dropdownRef} style={{ position: 'relative', marginLeft: '1rem' }}>
