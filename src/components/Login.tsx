@@ -17,11 +17,7 @@ export function Login({ onNavigate }: LoginProps) {
 
   useEffect(() => {
     if (user) {
-      if (user.email === import.meta.env.VITE_ADMIN_EMAIL) {
-        onNavigate("admin");
-      } else {
-        onNavigate("home");
-      }
+      onNavigate("home");
     }
   }, [user, onNavigate]);
 

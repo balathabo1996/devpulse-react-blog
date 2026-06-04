@@ -1,5 +1,5 @@
-// Navbar: Top navigation bar with branding and links
 import { Terminal, LogIn, LogOut, Settings, User, ChevronDown, Search, Filter } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -15,6 +15,7 @@ interface NavbarProps {
   categories?: string[];
   selectedCategory?: string | null;
   onCategorySelect?: (category: string | null) => void;
+  onFilterClick?: () => void;
 }
 
 const NAV_ITEMS = ["Home", "Posts", "About", "Contact"] as const;
@@ -27,7 +28,8 @@ export function Navbar({
   onSearch,
   categories,
   selectedCategory,
-  onCategorySelect
+  onCategorySelect,
+  onFilterClick
 }: NavbarProps) {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -105,12 +107,14 @@ export function Navbar({
                 onBlur={() => setIsSearchActive(false)}
               />
             </div>
-            
             {categories && categories.length > 0 && (
               <div ref={categoryRef} style={{ position: 'relative', marginLeft: '0.5rem' }}>
                 <button 
                   className={`nav-category-btn ${selectedCategory ? 'active' : ''}`}
-                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  onClick={() => {
+                    setIsCategoryOpen(!isCategoryOpen);
+                    onFilterClick?.();
+                  }}
                   title="Filter by Category"
                 >
                   <Filter size={16} />
@@ -139,8 +143,18 @@ export function Navbar({
             )}
           </li>
 
-          {user ? (
-            <li className="nav-user-info nav-auth-item" ref={dropdownRef} style={{ position: 'relative', marginLeft: '1rem' }}>
+          <AnimatePresence mode="wait">
+            {user ? (
+              <motion.li 
+                key="user-menu"
+                className="nav-user-info nav-auth-item" 
+                ref={dropdownRef} 
+                style={{ position: 'relative', marginLeft: '1rem' }}
+                initial={{ opacity: 0, scale: 0.9, x: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="profile-dropdown-trigger"
@@ -184,21 +198,30 @@ export function Navbar({
                   
                   <div className="dropdown-divider"></div>
                   <button 
-                    onClick={() => { logout(); setIsDropdownOpen(false); }} 
+                    onClick={() => { logout(); setIsDropdownOpen(false); onNavigate("home"); }} 
                     className="dropdown-item dropdown-logout"
                   >
                     <LogOut size={16} /> Log Out
                   </button>
                 </div>
               )}
-            </li>
-          ) : (
-            <li className="nav-auth-item" style={{ marginLeft: '1rem' }}>
-              <button onClick={() => onNavigate("login")} className={`btn ${currentView === 'login' ? 'btn-primary' : 'btn-ghost nav-login-btn'}`} style={{ padding: '0.5rem 1rem' }}>
-                <LogIn size={16} className="icon-margin-right" /> Login
-              </button>
-            </li>
-          )}
+              </motion.li>
+            ) : (
+              <motion.li 
+                key="login-btn"
+                className="nav-auth-item" 
+                style={{ marginLeft: '1rem' }}
+                initial={{ opacity: 0, scale: 0.9, x: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.9, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <button onClick={() => onNavigate("login")} className={`btn ${currentView === 'login' ? 'btn-primary' : 'btn-ghost nav-login-btn'}`} style={{ padding: '0.5rem 1rem' }}>
+                  <LogIn size={16} className="icon-margin-right" /> Login
+                </button>
+              </motion.li>
+            )}
+          </AnimatePresence>
         </ul>
       </div>
     </nav>

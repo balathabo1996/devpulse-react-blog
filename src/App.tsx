@@ -43,10 +43,52 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  const feedRef = useRef<HTMLDivElement>(null);
+
+  const handleCategorySelectAndScroll = useCallback((cat: string | null) => {
+    setSelectedCategory(cat);
+    if (view !== "home") {
+      setView("home");
+      setSelectedPost(null);
+    }
+    
+    // Scroll to the feed section smoothly
+    setTimeout(() => {
+      const headerOffset = 80; // approximate navbar height
+      const feedElement = document.getElementById("feed-section");
+      if (feedElement) {
+        const elementPosition = feedElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }, 100);
+  }, [view]);
+
+  const handleScrollToFilters = useCallback(() => {
+    if (view !== "home") {
+      setView("home");
+    }
+    setTimeout(() => {
+      const headerOffset = 80;
+      const feedElement = document.getElementById("feed-section");
+      if (feedElement) {
+        const elementPosition = feedElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+      }
+    }, 100);
+  }, [view]);
+
   const { posts, loading, hasMore, loadMore, likePost, viewPost } = usePosts(
     selectedCategory,
     searchQuery,
   );
+
+  const { posts: heroPosts } = usePosts(null, "");
+  
   const categories = useCategories();
 
   useEffect(() => {
@@ -178,16 +220,22 @@ function App() {
         }}
         categories={categories}
         selectedCategory={selectedCategory}
-        onCategorySelect={(cat) => {
-          setSelectedCategory(cat);
-          if (view !== "posts" && view !== "home") {
-            setView("home");
-            setSelectedPost(null);
-          }
-        }}
+        onCategorySelect={handleCategorySelectAndScroll}
+        onFilterClick={handleScrollToFilters}
       />
-      <Hero />
-      <main className="container main-content">
+      <Hero 
+        posts={heroPosts.slice(0, 5)} 
+        categories={categories}
+        onSelectPost={(post) => {
+          setSelectedPost(post);
+          setView("posts");
+          window.scrollTo(0, 0);
+        }}
+        onSelectCategory={handleCategorySelectAndScroll}
+        onNavigate={handleNavigate}
+        isHome={view === "home"} 
+      />
+      <main className="container main-content" id="feed-section">
         <AnimatePresence mode="wait">
           <motion.div
             key={view + (selectedPost ? "-post-" + (selectedPost.id || selectedPost._id) : "") + (selectedCategory ? "-cat-" + selectedCategory : "")}
@@ -365,23 +413,28 @@ function App() {
               )}
             </div>
             <aside className="sidebar">
-              <div className="widget">
-                <h3 className="widget-title">About</h3>
-                <div className="widget-empty">
-                  <p>
-                    Welcome to DevPulse. Click on any post to read the full
-                    article and leave comments.
-                  </p>
-                  <br />
-                  <p>
-                    This blog is now real-time! Try opening it in multiple tabs.
+              <motion.div 
+                className="widget premium-widget"
+                whileHover={{ y: -5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                  <div style={{ padding: '0.5rem', background: 'var(--primary-gradient)', borderRadius: '0.5rem', display: 'flex' }}>
+                    <Sparkles size={20} color="white" />
+                  </div>
+                  <h3 className="widget-title" style={{ margin: 0, border: 'none', padding: 0 }}>About DevPulse</h3>
+                </div>
+                <div className="widget-content">
+                  <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-muted)' }}>
+                    Welcome to <span style={{ color: 'var(--text)', fontWeight: 600 }}>DevPulse</span>. 
+                    Dive into our premium articles, engage with the community, and stay ahead of the curve.
                   </p>
                 </div>
-              </div>
+              </motion.div>
               <CategoryList
                 categories={categories}
                 selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
+                onSelectCategory={handleCategorySelectAndScroll}
               />
             </aside>
           </div>

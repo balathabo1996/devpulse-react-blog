@@ -64,23 +64,20 @@ export function Contact() {
           onSubmit={handleSubmit(onSubmit)}
           className="comment-form contact-form-reset"
         >
-          <div className="form-group">
-            <label htmlFor="name" className="form-label">
-              Name <span className="text-danger">*</span>
-            </label>
+          <div className="form-group floating-group" style={{ margin: 0, marginBottom: '1.5rem' }}>
             <input
               id="name"
               {...register("name", { required: "Name is required" })}
-              className={`form-input ${errors.name ? "error" : ""}`}
-              placeholder="Your Name"
+              className={`form-input floating-input-global ${errors.name ? "error" : ""}`}
+              placeholder=" "
             />
-            {errors.name && <p className="form-error">{errors.name.message}</p>}
+            <label htmlFor="name" className="floating-label-global">
+              Name <span className="text-danger">*</span>
+            </label>
+            {errors.name && <p className="form-error" style={{ marginTop: '0.25rem' }}>{errors.name.message}</p>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email <span className="text-danger">*</span>
-            </label>
+          <div className="form-group floating-group" style={{ margin: 0, marginBottom: '1.5rem' }}>
             <input
               id="email"
               type="email"
@@ -91,30 +88,30 @@ export function Contact() {
                   message: "Invalid email address",
                 },
               })}
-              className={`form-input ${errors.email ? "error" : ""}`}
-              placeholder="you@example.com"
+              className={`form-input floating-input-global ${errors.email ? "error" : ""}`}
+              placeholder=" "
             />
+            <label htmlFor="email" className="floating-label-global">
+              Email <span className="text-danger">*</span>
+            </label>
             {errors.email && (
-              <p className="form-error">{errors.email.message}</p>
+              <p className="form-error" style={{ marginTop: '0.25rem' }}>{errors.email.message}</p>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="subject" className="form-label">
-              Subject
-            </label>
+          <div className="form-group floating-group" style={{ margin: 0, marginBottom: '1.5rem' }}>
             <input
               id="subject"
               {...register("subject")}
-              className="form-input"
-              placeholder="What is this regarding?"
+              className="form-input floating-input-global"
+              placeholder=" "
             />
+            <label htmlFor="subject" className="floating-label-global">
+              Subject
+            </label>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="message" className="form-label">
-              Message <span className="text-danger">*</span>
-            </label>
+          <div className="form-group floating-group" style={{ margin: 0, marginBottom: '1.5rem' }}>
             <textarea
               id="message"
               rows={5}
@@ -124,11 +121,14 @@ export function Contact() {
                   value.trim().split(/\s+/).length >= 10 ||
                   "Message must be at least 10 words long",
               })}
-              className={`form-input resize-vertical ${errors.message ? "error" : ""}`}
-              placeholder="Write your message here..."
+              className={`form-input resize-vertical floating-input-global ${errors.message ? "error" : ""}`}
+              placeholder=" "
             />
+            <label htmlFor="message" className="floating-label-global">
+              Message <span className="text-danger">*</span>
+            </label>
             {errors.message && (
-              <p className="form-error">{errors.message.message}</p>
+              <p className="form-error" style={{ marginTop: '0.25rem' }}>{errors.message.message}</p>
             )}
           </div>
 

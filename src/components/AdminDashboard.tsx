@@ -57,17 +57,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
 
-  if (user?.email !== adminEmail) {
-    return (
-      <div className="container" style={{ textAlign: "center", padding: "4rem 0" }}>
-        <h2 className="hero-title" style={{ color: "var(--danger)" }}>Access Denied</h2>
-        <p className="hero-subtitle">You do not have permission to view the admin dashboard.</p>
-        <button onClick={() => onNavigate("home")} className="btn btn-primary" style={{ marginTop: "2rem" }}>
-          Return Home
-        </button>
-      </div>
-    );
-  }
+
 
   useEffect(() => {
     if (activeTab === "manage_posts") {
@@ -267,6 +257,18 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     ],
   };
 
+  if (user?.email !== adminEmail) {
+    return (
+      <div className="container" style={{ textAlign: "center", padding: "4rem 0" }}>
+        <h2 className="hero-title" style={{ color: "var(--danger)" }}>Access Denied</h2>
+        <p className="hero-subtitle">You do not have permission to view the admin dashboard.</p>
+        <button onClick={() => onNavigate("home")} className="btn btn-primary" style={{ marginTop: "2rem" }}>
+          Return Home
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="container" style={{ padding: "4rem 0" }}>
       <div className="widget" style={{ maxWidth: "900px", margin: "0 auto" }}>
@@ -343,47 +345,44 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <div className="form-group">
-            <label htmlFor="title" className="form-label">
-              Post Title <span className="form-required">*</span>
-            </label>
+          <div className="form-group floating-group">
             <input
               type="text"
               id="title"
               name="title"
-              className="form-input"
+              className="form-input floating-input-global"
               value={formData.title}
               onChange={handleChange}
               required
-              placeholder="e.g. Mastering React Hooks"
+              placeholder=" "
             />
+            <label htmlFor="title" className="floating-label-global">
+              Post Title <span className="form-required">*</span>
+            </label>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-            <div className="form-group">
-              <label htmlFor="category" className="form-label">
-                Category <span className="form-required">*</span>
-              </label>
+            <div className="form-group floating-group">
               <input
                 type="text"
                 id="category"
                 name="category"
-                className="form-input"
+                className="form-input floating-input-global"
                 value={formData.category}
                 onChange={handleChange}
                 required
-                placeholder="e.g. Engineering, AI, Career"
+                placeholder=" "
               />
+              <label htmlFor="category" className="floating-label-global">
+                Category <span className="form-required">*</span>
+              </label>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="status" className="form-label">
-                Status <span className="form-required">*</span>
-              </label>
+            <div className="form-group floating-group">
               <select
                 id="status"
                 name="status"
-                className="form-input"
+                className="form-input floating-input-global"
                 value={formData.status}
                 onChange={handleChange}
                 required
@@ -392,39 +391,42 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <option value="published">Published (Live)</option>
                 <option value="draft">Draft (Hidden)</option>
               </select>
+              <label htmlFor="status" className="floating-label-global" style={{ top: 0, left: '0.8rem', fontSize: '0.75rem', color: 'var(--primary)', background: 'var(--surface)', padding: '0 0.25rem', transform: 'translateY(-50%)' }}>
+                Status <span className="form-required">*</span>
+              </label>
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="imageUrl" className="form-label">
-              Cover Image URL <span className="form-required">*</span>
-            </label>
+          <div className="form-group floating-group">
             <input
               type="url"
               id="imageUrl"
               name="imageUrl"
-              className="form-input"
+              className="form-input floating-input-global"
               value={formData.imageUrl}
               onChange={handleChange}
               required
-              placeholder="https://images.unsplash.com/..."
+              placeholder=" "
             />
+            <label htmlFor="imageUrl" className="floating-label-global">
+              Cover Image URL <span className="form-required">*</span>
+            </label>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="excerpt" className="form-label">
-              Excerpt (Short Summary) <span className="form-required">*</span>
-            </label>
+          <div className="form-group floating-group">
             <textarea
               id="excerpt"
               name="excerpt"
               rows={3}
-              className="form-input"
+              className="form-input floating-input-global"
               value={formData.excerpt}
               onChange={handleChange}
               required
-              placeholder="A brief overview of the post..."
+              placeholder=" "
             />
+            <label htmlFor="excerpt" className="floating-label-global">
+              Excerpt (Short Summary) <span className="form-required">*</span>
+            </label>
           </div>
 
           <div className="form-group">
