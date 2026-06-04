@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Loader2, Sparkles, Briefcase, Cloud, Wrench, Shield, BookOpen, LayoutGrid } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Loader2, Sparkles, Briefcase, Cloud, Wrench, Shield, BookOpen, LayoutGrid } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { PostList } from "./components/PostList";
-import { PostDetail } from "./components/PostDetail";
 import { PostFullDetail } from "./components/PostFullDetail";
 import { CategoryList } from "./components/CategoryList";
 import { Contact } from "./components/Contact";
@@ -18,7 +17,6 @@ import { UserProfile } from "./components/UserProfile";
 import { Footer } from "./components/Footer";
 import { usePosts, useCategories } from "./hooks/usePosts";
 import { useComments } from "./hooks/useComments";
-import { useAuth } from "./context/AuthContext";
 import type { Post } from "./types";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -42,8 +40,6 @@ function App() {
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-
-  const feedRef = useRef<HTMLDivElement>(null);
 
   const handleCategorySelectAndScroll = useCallback((cat: string | null) => {
     setSelectedCategory(cat);

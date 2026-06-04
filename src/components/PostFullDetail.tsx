@@ -1,5 +1,5 @@
 // Blog Post Page: Main view for a specific blog post including comments
-import { ArrowLeft, Calendar, Tag, ThumbsUp, Eye, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, Eye, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Post, Comment } from "../types";
 import { CommentList } from "./CommentList";

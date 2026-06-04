@@ -1,4 +1,4 @@
-import { Terminal, LogIn, LogOut, Settings, User, ChevronDown, Search, Filter } from "lucide-react";
+import { Terminal, LogIn, LogOut, User, ChevronDown, Search, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";

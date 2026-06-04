@@ -85,7 +85,7 @@ export function PostDetail({
         </button>
       </div>
       <section>
-        <CommentList comments={comments} />
+        <CommentList comments={comments} onReply={() => {}} />
         <CommentForm onSubmit={onAddComment} />
       </section>
     </article>

@@ -721,7 +721,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                           contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', backdropFilter: 'blur(10px)' }}
                         />
                         <Bar dataKey="views" radius={[4, 4, 0, 0]}>
-                          {analyticsData.categoryPerformance.map((entry: any, index: number) => (
+                          {analyticsData.categoryPerformance.map((_entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={index % 2 === 0 ? "var(--primary)" : "var(--secondary)"} />
                           ))}
                         </Bar>

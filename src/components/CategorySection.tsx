@@ -1,4 +1,4 @@
-import { Loader2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { usePosts } from "../hooks/usePosts";
 import { PostList } from "./PostList";
 import { PostCardSkeleton } from "./SkeletonLoader";

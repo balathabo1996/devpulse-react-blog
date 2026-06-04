@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send } from "lucide-react";
 import type { Comment } from "../types";
 
 interface CommentItemProps {
