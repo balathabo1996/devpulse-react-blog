@@ -12,7 +12,40 @@ const initialPosts = [
     author: "Admin",
     readTime: "7 min",
     excerpt: "Diving deep into Server Components and the new data fetching paradigms in Next.js 15.",
-    content: "Next.js has fundamentally shifted how we build React applications. By embracing React Server Components (RSC) by default, Next.js 15 allows developers to ship zero client-side JavaScript for parts of their application that don't need interactivity. This drastically improves initial page load times and SEO. We'll explore how to handle mutations using Server Actions without writing API endpoints.",
+    content: `
+      <p>Next.js has fundamentally shifted how we build React applications. By embracing <strong>React Server Components (RSC)</strong> by default, Next.js 15 allows developers to ship zero client-side JavaScript for parts of their application that don't need interactivity. This drastically improves initial page load times and SEO.</p>
+      
+      <h2>The Paradigm Shift: Server Components</h2>
+      <p>Before Next.js App Router, we had to choose between <code>getStaticProps</code> or <code>getServerSideProps</code> at the page level. Now, you can mix and match Server and Client components perfectly within the same tree.</p>
+      
+      <pre><code>// app/page.tsx (Server Component)
+import { Suspense } from 'react';
+import Posts from './Posts';
+import Loading from './Loading';
+
+export default async function Page() {
+  return (
+    <main>
+      <h1>Latest Articles</h1>
+      <Suspense fallback={<Loading />}>
+        <Posts />
+      </Suspense>
+    </main>
+  );
+}</code></pre>
+
+      <br/>
+      <h2>Server Actions: The End of API Routes?</h2>
+      <p>One of the most exciting features is <strong>Server Actions</strong>. Instead of building an entire API endpoint just to handle a form submission or a database mutation, you can now write server-side code directly in your component files and call them from the client.</p>
+      
+      <ul>
+        <li><strong>Less Boilerplate:</strong> No more writing <code>fetch</code> wrappers.</li>
+        <li><strong>Type Safety:</strong> End-to-end typing without code generation.</li>
+        <li><strong>Progressive Enhancement:</strong> Forms work even before JavaScript loads!</li>
+      </ul>
+
+      <p>Next.js 15 is proving that the web can be incredibly fast without sacrificing the developer experience we've come to love from React.</p>
+    `,
     category: "Engineering",
     imageUrl: "/images/post1.jpg",
   },
